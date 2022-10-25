@@ -43,8 +43,20 @@ String timeStamp;
 #include "BluetoothA2DPSink.h"
 
 BluetoothA2DPSink a2dp_sink;
-
+//Configurando tela
 #include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
+#define TFT_GREY 0x5AEB
+#define lightblue 0x01E9
+#define darkred 0xA041
+#define blue 0x5D9B
+#define TFT_BLACK 0x0000 // black
+
+
+const int pwmFreq = 5000;
+const int pwmResolution = 8;
+const int pwmLedChannelTFT = 0;
+
+
 #include <SPI.h>
 #include <WiFi.h>
 #include "time.h"
@@ -55,8 +67,6 @@ const int   daylightOffset_sec = 0;
 
 
 TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
-
-#define TFT_BLACK 0x0000 // black
 
 
 #else
@@ -105,6 +115,63 @@ const int ledPin = 6;
 bool ledState = LOW;
 
 
+// Config do que acontece quando recebe msg
+
+void handleNewMessages(int numNewMessages) {
+  Serial.println("handleNewMessages");
+  Serial.println(String(numNewMessages));
+
+  for (int i=0; i<numNewMessages; i++) {
+    // Chat id of the requester
+    String chat_id = String(bot.messages[i].chat_id);
+    if (chat_id != CHAT_ID){
+      bot.sendMessage(chat_id, "Unauthorized user", "");
+      continue;
+    }
+    
+    // Print the received message
+    String text = bot.messages[i].text;
+    Serial.println(text);
+
+    String from_name = bot.messages[i].from_name;
+
+    if (text == "/start") {
+      String welcome = "Bem vindo, " + from_name + ".\n";
+      welcome += "Use os comandos a seguir para controlar a Pandora .\n\n";
+      welcome += "/ledon para ligar a luminaria \n";
+      welcome += "/led_off to turn GPIO OFF \n";
+      welcome += "/state to request current GPIO state \n";
+      bot.sendMessage(chat_id, welcome, "");
+
+bot.sendMessage(chat_id,&timeinfo,"%H:%M:%S %B %d %Y \n %A");
+
+    }
+
+    if (text == "/ledon") {
+      bot.sendMessage(chat_id, "Ligando LED RGB", "");
+//Inicia ciclo
+bot.sendMessage(chat_id,&timeinfo,"%H:%M:%S %B %d %Y \n %A");
+      ledState = HIGH;
+digitalWrite(ledPin, ledState);
+
+    }
+    
+    if (text == "/led_off") {
+      bot.sendMessage(chat_id, "LED state set to OFF", "");
+      ledState = LOW;
+      digitalWrite(ledPin, ledState);
+    }
+    
+    if (text == "/state") {
+      if (digitalRead(ledPin)){
+        bot.sendMessage(chat_id, "LED is ON", "");
+      }
+      else{
+        bot.sendMessage(chat_id, "LED is OFF", "");
+      }
+    }
+  }
+}
 
 
 
@@ -113,6 +180,21 @@ bool ledState = LOW;
 
 
 void setup() {
+  
+  
+  
+  
+//Inicia display
+    tft.init();
+  tft.setRotation(0);
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE,TFT_BLACK);  tft.setTextSize(1);
+
+  ledcSetup(pwmLedChannelTFT, pwmFreq, pwmResolution);
+  ledcAttachPin(TFT_BL, pwmLedChannelTFT);
+  ledcWrite(pwmLedChannelTFT, backlight[b]);
+  
+//inicia LDR
 
 pinMode(ldr, INPUT); //Define ldr (pino analógico A0) como saída
 
@@ -134,6 +216,28 @@ pixels.begin();
 
     a2dp_sink.set_i2s_config(i2s_config);
     a2dp_sink.start("Pandora LUX");
+  
+    Serial.begin(115200);
+  tft.print("Connecting to ");
+  tft.println(ssid);
+  WiFi.begin(ssid, password);
+  
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(300);
+    tft.print(".");
+    
+    // Initialize a NTPClient to get time
+  timeClient.begin(); 
+  // Set offset time in seconds to adjust for your timezone, for example:
+  // GMT +1 = 3600
+  // GMT +8 = 28800
+  // GMT -1 = -3600
+  // GMT 0 = 0
+  timeClient.setTimeOffset(3600);   /*EDDITTTTTTTTTTTTTTTTTTTTTTTT                      */
+  getData();
+  delay(500);
+    
+    
 
 }
 
@@ -240,5 +344,50 @@ void tarefa1(){
   if((millis() - millisTarefa1) > 400){
     millisTarefa1 = millis();
   }
+  
+  void getData()
+{
+    tft.fillRect(1,170,64,20,TFT_BLACK);
+    tft.fillRect(1,210,64,20,TFT_BLACK);
+   if ((WiFi.status() == WL_CONNECTED)) { //Check the current connection status
+ 
+    HTTPClient http;
+ 
+    http.begin(endpoint + key); //Specify the URL
+    int httpCode = http.GET();  //Make the request
+ 
+    if (httpCode > 0) { //Check for the returning code
+ 
+         payload = http.getString();
+       // Serial.println(httpCode);
+        Serial.println(payload);
+        
+      }
+ 
+    else {
+      Serial.println("Error on HTTP request");
+    }
+ 
+    http.end(); //Free the resources
+  }
+ char inp[1000];
+ payload.toCharArray(inp,1000);
+ deserializeJson(doc,inp);
+  
+  String tmp2 = doc["main"]["temp"];
+  String hum2 = doc["main"]["humidity"];
+  String town2 = doc["name"];
+  tmp=tmp2;
+  hum=hum2;
+  
+   Serial.println("Temperature"+String(tmp));
+   Serial.println("Humidity"+hum);
+   Serial.println(town);
+   
+ }
+  
+  
+  
+  
 }
  
