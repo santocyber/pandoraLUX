@@ -1,9 +1,7 @@
 /*
   SantoCyber 
-  Complete project details at https://github.com/santocyber 
+  Complete project details at https://github.com/santocyber/pandoraLUX
   
-  Project created using Brian Lough's Universal Telegram Bot Library: https://github.com/witnessmenow/Universal-Arduino-Telegram-Bot
-  Example based on the Universal Arduino Telegram Bot Library: https://github.com/witnessmenow/Universal-Arduino-Telegram-Bot/blob/master/examples/ESP8266/FlashLED/FlashLED.ino
 */
 
 
@@ -21,6 +19,26 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 
 int ldr = A0; //Atribui A0 a variável ldr
 int valorldr = 0;//Declara a variável valorldr como inteiro
+
+//client pegar previsao da web
+#include <HTTPClient.h>
+String town="Paris";              //EDDIT
+String Country="FR";                //EDDIT
+const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q="+town+","+Country+"&units=metric&APPID=";
+const String key = "d0d0bf1bb7xxxx2e5dce67c95f4fd0800"; /*EDDITTTTTTTTTTTTTTTTTTTTTTTT                      */
+
+String payload=""; //whole json 
+ String tmp="" ; //temperatur
+  String hum="" ; //humidity
+  
+StaticJsonDocument<1000> doc;
+
+// Variables to save date and time
+String formattedDate;
+String dayStamp;
+String timeStamp;
+
+
 
 #include "BluetoothA2DPSink.h"
 
@@ -52,12 +70,12 @@ const char* ssid = "InternetSA";
 const char* password = "cadebabaca";
 
 // Initialize Telegram BOT
-#define BOTtoken "5436108629:AAGxKKaYRn5JDtmyOLR8mhCDQeY59HgWQcc"  // your Bot Token (Get from Botfather)
+#define BOTtoken "5636503763:AAGVb0EGHIM3NbQICjdL0bRB8nbWdoAiKqc"  // your Bot Token (Get from Botfather)
 
 // Use @myidbot to find out the chat ID of an individual or a group
 // Also note that you need to click "start" on a bot before it can
 // message you
-#define CHAT_ID "PandoraLUXbot"
+#define CHAT_ID "-878096558"
 
 #ifdef ESP8266
   X509List cert(TELEGRAM_CERTIFICATE_ROOT);
