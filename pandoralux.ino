@@ -4,80 +4,75 @@
   
 */
 
-
-#ifdef ESP32
-
-//Led config 
 #include <Adafruit_NeoPixel.h>
+#include <WiFiClientSecure.h>
+#include <UniversalTelegramBot.h>   
+#include <ArduinoJson.h>
+#include <SPI.h>
+#include <WiFi.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include "DHT.h"//Carrega a biblioteca DHT
+
+dht11 DHT; // Cria um objeto p o sensor DHT11
+// Pino analógico em que o sensor DHT11 está conectado
+#define DHTPIN 4 
+//#define DHTTYPE DHT11   // DHT 11
+#define DHTTYPE DHT11   // DHT 22  (AM2302), AM2321
+//#define DHTTYPE DHT21   // DHT 21 (AM2301)
+DHT dht(DHTPIN, DHTTYPE);
+
+
+//Configura fuso horario em segundos
+  // Set offset time in seconds to adjust for your timezone, for example:
+  // GMT +1 = 3600
+  // GMT +8 = 28800
+  // GMT -1 = -3600
+  // GMT 0 = 0
+
+#define NTP_OFFSET  19800 // In seconds
+#define NTP_INTERVAL 60 * 1000    // In miliseconds
+#define NTP_ADDRESS  "pool.ntp.org"
+
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, NTP_ADDRESS, NTP_OFFSET, NTP_INTERVAL);
+
+
+#define OLED_MOSI  23
+#define OLED_CLK   18
+#define OLED_DC    4
+#define OLED_CS    5
+#define OLED_RESET 2
+Adafruit_SSD1306 display(OLED_MOSI, OLED_CLK, OLED_DC, OLED_RESET, OLED_CS);
+
+
+
+// Replace with your network credentials
+const char* ssid = "InternetSA";
+const char* password = "cadebabaca";
+
+
+//Config LED Strip
+//Lista cores http://www.cdme.im-uff.mat.br/matrix/matrix-html/matrix_color_cube/matrix_color_cube_br.html
+
+//rainbow cycle https://www.tweaking4all.com/hardware/arduino/adruino-led-strip-effects/#rainbow_cycle.
+
+int ledPin = 6;
 #define PIN        6
 #define NUMPIXELS 60
 
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+
 #define DELAYVAL 500 // Time (in milliseconds) to pause between pixels
+
 
 //Ldr config
 
 int ldr = A0; //Atribui A0 a variável ldr
 int valorldr = 0;//Declara a variável valorldr como inteiro
 
-//client pegar previsao da web
-#include <HTTPClient.h>
-String town="Paris";              //EDDIT
-String Country="FR";                //EDDIT
-const String endpoint = "http://api.openweathermap.org/data/2.5/weather?q="+town+","+Country+"&units=metric&APPID=";
-const String key = "d0d0bf1bb7xxxx2e5dce67c95f4fd0800"; /*EDDITTTTTTTTTTTTTTTTTTTTTTTT                      */
-
-String payload=""; //whole json 
- String tmp="" ; //temperatur
-  String hum="" ; //humidity
-  
-StaticJsonDocument<1000> doc;
-
-// Variables to save date and time
-String formattedDate;
-String dayStamp;
-String timeStamp;
-
-
-
-#include "BluetoothA2DPSink.h"
-
-BluetoothA2DPSink a2dp_sink;
-//Configurando tela
-#include <TFT_eSPI.h> // Graphics and font library for ST7735 driver chip
-#define TFT_GREY 0x5AEB
-#define lightblue 0x01E9
-#define darkred 0xA041
-#define blue 0x5D9B
-#define TFT_BLACK 0x0000 // black
-
-
-const int pwmFreq = 5000;
-const int pwmResolution = 8;
-const int pwmLedChannelTFT = 0;
-
-
-#include <SPI.h>
-#include <WiFi.h>
-#include "time.h"
-
-const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 0;    //UTC Offset!
-const int   daylightOffset_sec = 0;
-
-
-TFT_eSPI tft = TFT_eSPI();  // Invoke library, pins defined in User_Setup.h
-
-
-#else
-#endif
-#include <WiFiClientSecure.h>
-#include <UniversalTelegramBot.h>   
-#include <ArduinoJson.h>
-
-// Replace with your network credentials
-const char* ssid = "InternetSA";
-const char* password = "cadebabaca";
 
 // Initialize Telegram BOT
 #define BOTtoken "5636503763:AAGVb0EGHIM3NbQICjdL0bRB8nbWdoAiKqc"  // your Bot Token (Get from Botfather)
@@ -107,12 +102,224 @@ unsigned long millisTarefa4 = millis();
 
 
 //Botao pin on esp32 GPIO 0 boot button
-int buttonPin;
-buttonPin = 0; 
+const int buttonPin = 0;
 
-//Led
-const int ledPin = 6;
-bool ledState = LOW;
+
+
+
+
+//Configura os voids
+
+void showStrip() {
+   // NeoPixel
+   pixels.show();
+   }
+
+   
+void setPixel(int Pixel, byte red, byte green, byte blue) {
+   // NeoPixel
+   pixels.setPixelColor(Pixel, pixels.Color(red, green, blue));
+}
+   
+void setAll(byte red, byte green, byte blue) {
+  for(int i = 0; i < NUMPIXELS; i++ ) {
+    setPixel(i, red, green, blue);
+  }
+  showStrip();
+}
+
+
+
+
+void ledgreen (){
+
+   pixels.clear(); // Set all pixel colors to 'off'
+
+  // The first NeoPixel in a strand is #0, second is 1, all the way up
+  // to the count of pixels minus one.
+  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
+
+    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+    // Here we're using a moderately bright green color:
+    pixels.setPixelColor(i, pixels.Color(0, 150, 0));
+
+    pixels.show();   // Send the updated pixel colors to the hardware.
+
+    delay(DELAYVAL); // Pause before next pass through loop
+}}
+
+
+ void Strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, int EndPause){
+  for(int j = 0; j < StrobeCount; j++) {
+    setAll(red,green,blue);
+    showStrip();
+    delay(FlashDelay);
+    setAll(0,0,0);
+    showStrip();
+    delay(FlashDelay);
+  }
+ 
+ delay(EndPause);
+}
+
+
+  
+
+void NeoFade(int FadeSpeed)
+{
+int fspeed;
+for (int i = 0; i < NUMPIXELS; i++) { pixels.setPixelColor(i, 165, 242, 243); } for (int j = 255; j > 0; j=j-2)
+{
+pixels.setBrightness(j);
+pixels.show();
+delay(FadeSpeed);
+}
+}
+
+
+
+void ledazul(){
+   pixels.clear(); // Set all pixel colors to 'off'
+
+  // The first NeoPixel in a strand is #0, second is 1, all the way up
+  // to the count of pixels minus one.
+  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
+
+    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+    // Here we're using a moderately bright green color:
+    pixels.setPixelColor(i, pixels.Color(0, 0, 150));
+
+    pixels.show();   // Send the updated pixel colors to the hardware.
+
+    delay(DELAYVAL); // Pause before next pass through loop
+}
+
+}
+
+void ledamarelo(){
+
+    pixels.clear(); // Set all pixel colors to 'off'
+
+  // The first NeoPixel in a strand is #0, second is 1, all the way up
+  // to the count of pixels minus one.
+  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
+
+    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+    // Here we're using a moderately bright green color:
+    pixels.setPixelColor(i, pixels.Color(255, 255, 0));
+
+    pixels.show();   // Send the updated pixel colors to the hardware.
+
+    delay(DELAYVAL); // Pause before next pass through loop
+}
+
+}
+
+void ledvermelho(){
+   pixels.clear(); // Set all pixel colors to 'off'
+
+  // The first NeoPixel in a strand is #0, second is 1, all the way up
+  // to the count of pixels minus one.
+  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
+
+    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+    // Here we're using a moderately bright green color:
+    pixels.setPixelColor(i, pixels.Color(150, 0, 0));
+
+    pixels.show();   // Send the updated pixel colors to the hardware.
+
+    delay(DELAYVAL); // Pause before next pass through loop
+}
+
+}
+
+
+void Sparkle(byte red, byte green, byte blue, int SpeedDelay) {
+  int Pixel = random(NUMPIXELS);
+  setPixel(Pixel,red,green,blue);
+  showStrip();
+  delay(SpeedDelay);
+  setPixel(Pixel,0,0,0);
+}
+
+
+
+
+void RunningLights(byte red, byte green, byte blue, int WaveDelay) {
+  int Position=0;
+ 
+  for(int j=0; j<NUMPIXELS*2; j++)
+  {
+      Position++; // = 0; //Position + Rate;
+      for(int i=0; i<NUMPIXELS; i++) {
+        // sine wave, 3 offset waves make a rainbow!
+        //float level = sin(i+Position) * 127 + 128;
+        //setPixel(i,level,0,0);
+        //float level = sin(i+Position) * 127 + 128;
+        setPixel(i,((sin(i+Position) * 127 + 128)/255)*red,
+                   ((sin(i+Position) * 127 + 128)/255)*green,
+                   ((sin(i+Position) * 127 + 128)/255)*blue);
+      }
+     
+      showStrip();
+      delay(WaveDelay);
+  }
+}
+
+
+
+void rainbowCycle(int SpeedDelay) {
+  byte *c;
+  uint16_t i, j;
+
+  for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
+    for(i=0; i< NUMPIXELS; i++) {
+      c=Wheel(((i * 256 / NUMPIXELS) + j) & 255);
+      setPixel(i, *c, *(c+1), *(c+2));
+    }
+    showStrip();
+    delay(SpeedDelay);
+  }
+}
+
+byte * Wheel(byte WheelPos) {
+  static byte c[3];
+ 
+  if(WheelPos < 85) {
+   c[0]=WheelPos * 3;
+   c[1]=255 - WheelPos * 3;
+   c[2]=0;
+  } else if(WheelPos < 170) {
+   WheelPos -= 85;
+   c[0]=255 - WheelPos * 3;
+   c[1]=0;
+   c[2]=WheelPos * 3;
+  } else {
+   WheelPos -= 170;
+   c[0]=0;
+   c[1]=WheelPos * 3;
+   c[2]=255 - WheelPos * 3;
+  }
+
+  return c;
+}
+
+void tarefa1(){
+  // Verifica se já passou 200 milisegundos
+  if((millis() - millisTarefa1) < 200){
+    // Acende o led do pino 7
+    digitalWrite(7, HIGH);
+  }else{
+    // Apaga o led do pino 7
+    digitalWrite(7, LOW);
+  }
+  // Verifica se já passou 400 milisegundos reinicia funcao
+  if((millis() - millisTarefa1) > 400){
+    millisTarefa1 = millis();
+  }}
+  
+  
+
 
 
 // Config do que acontece quando recebe msg
@@ -120,6 +327,7 @@ bool ledState = LOW;
 void handleNewMessages(int numNewMessages) {
   Serial.println("handleNewMessages");
   Serial.println(String(numNewMessages));
+  
 
   for (int i=0; i<numNewMessages; i++) {
     // Chat id of the requester
@@ -143,23 +351,58 @@ void handleNewMessages(int numNewMessages) {
       welcome += "/state to request current GPIO state \n";
       bot.sendMessage(chat_id, welcome, "");
 
-bot.sendMessage(chat_id,&timeinfo,"%H:%M:%S %B %d %Y \n %A");
-
     }
 
     if (text == "/ledon") {
       bot.sendMessage(chat_id, "Ligando LED RGB", "");
-//Inicia ciclo
-bot.sendMessage(chat_id,&timeinfo,"%H:%M:%S %B %d %Y \n %A");
-      ledState = HIGH;
-digitalWrite(ledPin, ledState);
+NeoFade(100);
+Sparkle(random(255), random(255), random(255), 0);
+ RunningLights(0xff,0xff,0x00, 50);
+  rainbowCycle(20);
+
+    }
+    if (text == "azul") {
+      bot.sendMessage(chat_id, "Esta tudo azul", "");
+ledazul();
+}
+    if (text == "verde") {
+      bot.sendMessage(chat_id, "Ta tudo green", "");
+      ledgreen();
+}
+           if (text == "amarelo") {
+      bot.sendMessage(chat_id, "Amarelouuuu", "");
+      ledamarelo();
+}
+           if (text == "rainbow") {
+      bot.sendMessage(chat_id, "Cada celulinha do meu corpo esta alegre", "");
+      rainbowCycle(20);
+    }
+               if (text == "pisca") {
+      bot.sendMessage(chat_id, "Pisca pisca", "");
+      Strobe(0xff, 0xff, 0xff, 10, 50, 1000);
+    }
+
+
+               if (text == "temperatura") {
+                // Read temperature as Celsius (the default)
+float t = dht.readTemperature();
+      bot.sendMessage(chat_id, "A temperatura na luminaria eh", "");
+  bot.sendMessage(chat_id,"Temperatura:",t, "");
 
     }
     
-    if (text == "/led_off") {
+       if (text == "umidade") {
+float h = dht.readHumidity();
+      bot.sendMessage(chat_id, "A umidade na luminaria eh", "");
+  bot.sendMessage(chat_id,"Humidade:",h, "");
+
+    }
+   
+    
+          if (text == "/led_off") {
       bot.sendMessage(chat_id, "LED state set to OFF", "");
-      ledState = LOW;
-      digitalWrite(ledPin, ledState);
+      digitalWrite(ledPin, LOW);
+      pixels.clear(); 
     }
     
     if (text == "/state") {
@@ -182,212 +425,109 @@ digitalWrite(ledPin, ledState);
 void setup() {
   
   
-  
-  
-//Inicia display
-    tft.init();
-  tft.setRotation(0);
-  tft.fillScreen(TFT_BLACK);
-  tft.setTextColor(TFT_WHITE,TFT_BLACK);  tft.setTextSize(1);
+//Inicia sensor temp e umi
+dht.begin();
 
-  ledcSetup(pwmLedChannelTFT, pwmFreq, pwmResolution);
-  ledcAttachPin(TFT_BL, pwmLedChannelTFT);
-  ledcWrite(pwmLedChannelTFT, backlight[b]);
+
   
 //inicia LDR
 
 pinMode(ldr, INPUT); //Define ldr (pino analógico A0) como saída
 
-//Strip led início
-pixels.begin();
 
+Serial.begin(9600);
+Serial.println();
+Serial.println();
+Serial.print("Connecting to ");
+Serial.println(ssid);
+WiFi.begin(ssid, password);
+while (WiFi.status() != WL_CONNECTED)
+{
+delay(500);
+Serial.print(".");
+}
+Serial.println("");
+Serial.println("WiFi connected.");
+Serial.println("IP address: ");
+Serial.println(WiFi.localIP());
+timeClient.begin();
+display.begin(SSD1306_SWITCHCAPVCC);
 
-    static const i2s_config_t i2s_config = {
-        .mode = (i2s_mode_t) (I2S_MODE_MASTER | I2S_MODE_TX | I2S_MODE_DAC_BUILT_IN),
-        .sample_rate = 44100, // corrected by info from bluetooth
-        .bits_per_sample = (i2s_bits_per_sample_t) 16, /* the DAC module will only take the 8bits from MSB */
-        .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
-        .communication_format = (i2s_comm_format_t)I2S_COMM_FORMAT_STAND_MSB,
-        .intr_alloc_flags = 0, // default interrupt priority
-        .dma_buf_count = 8,
-        .dma_buf_len = 64,
-        .use_apll = false
-    };
+//inicia strip
+ pixels.begin();
+ pixels.show(); // Initialize all pixels to 'off'
 
-    a2dp_sink.set_i2s_config(i2s_config);
-    a2dp_sink.start("Pandora LUX");
-  
-    Serial.begin(115200);
-  tft.print("Connecting to ");
-  tft.println(ssid);
-  WiFi.begin(ssid, password);
-  
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(300);
-    tft.print(".");
-    
-    // Initialize a NTPClient to get time
-  timeClient.begin(); 
-  // Set offset time in seconds to adjust for your timezone, for example:
-  // GMT +1 = 3600
-  // GMT +8 = 28800
-  // GMT -1 = -3600
-  // GMT 0 = 0
-  timeClient.setTimeOffset(3600);   /*EDDITTTTTTTTTTTTTTTTTTTTTTTT                      */
-  getData();
-  delay(500);
-    
-    
 
 }
 
+
 void loop() {
+//Mostra hora na tela
+timeClient.update();
+String formattedTime = timeClient.getFormattedTime();
+display.clearDisplay();
+display.setTextSize(3);                         // set these parameters according to your need..
+display.setCursor(0, 0);
+display.println(formattedTime);
+
+delay(2000); // Aguarda 2 segundos
+
+
+//mostra temperatura e umidade na tela
+DHT.read(dhtpin); //Lê as informações do sensor
+
+// Exibindo valor da leitura do sensor de temperatura no display LCD
+display.clear(); // Limpa o display do LCD
+display.setTextSize(3);
+display.print("Temperatura:"); // Imprime a string no display do LCD
+display.print(DHT.temperature);
+display.write(B11011111); // Símbolo de graus Celsius
+display.print("C");
+display.setCursor(0,1); // Coloca o cursor na linha 0 e coluna 1
+display.print("Umidade:");
+display.print(DHT.humidity);
+display.print("%");
+delay(2000); // Aguarda 2 segundos
+
+
+
+//verifica mensagem no telgram
+ if (millis() > lastTimeBotRan + botRequestDelay)  {
+    int numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+
+    while(numNewMessages) {
+      Serial.println("got response");
+      handleNewMessages(numNewMessages);
+      numNewMessages = bot.getUpdates(bot.last_message_received + 1);
+    }
+    lastTimeBotRan = millis();
+  }
+  
+//funcao acende led quando valor de ldr cair
+  
 valorldr = analogRead(ldr);//Lê o valor do sensor ldr e armazena na variável valorldr
   Serial.println(valorldr);//Imprime na serial os dados de valorldr
 
   if ((valorldr) < 500) { //Se o valor de valorldr for menor que 500:
     //Coloca led em alto para acioná-lo
 ledgreen();
-bot.sendMessage(chat_id,&timeinfo,"%H:%M:%S %B %d %Y \n %A");
-
-bot.sendMessage(chat_id,"Alguém colocou algo sobre mim");
+Serial.println("Ha algo sobre a mesa");
+bot.sendMessage(CHAT_ID,"Alguém colocou algo sobre mim");
 
 
   }
 
   else { //Senão:
-    digitalWrite(ledPin, LOW);//Coloca led em baixo para que o mesmo desligue ou permaneça desligado
-  }
 
-
-
-
-ledrandom();
-ledgreen();
-testeled();
-NeoFade();
-NeoBlink();
-
-}
-
-
-
-//Pisca o led randomico
-void ledrandom() {
-pixels.clear();
-pixels.setPixelColor(random(0, 7), random(0, 255), random(0, 255), random(0, 255));
-pixels.show();
-delay(500);
-}
-
-
-void ledgreen (){
-
-pixels.setPixelColor(2, pixels.Color(0, 255, 0));
-pixels.show();
-
-
-}
-
-void testeled(){
-
-pixels.clear();
-pixels.setBrightness(10);
-pixels.setPixelColor(0, pixels.Color(255, 255, 255));
-pixels.setPixelColor(1, pixels.Color(255, 0, 0));
-pixels.setPixelColor(2, pixels.Color(0, 255, 0));
-pixels.setPixelColor(3, pixels.Color(0, 0, 255));
-pixels.setPixelColor(4, pixels.Color(255, 0, 255));
-pixels.setPixelColor(5, pixels.Color(255, 255, 0));
-pixels.setPixelColor(6, pixels.Color(0, 255, 255));
-pixels.show();
-}
-
-void NeoFade(int FadeSpeed)
-{
-int fspeed;
-for (int i = 0; i < NUMPIXELS; i++) { pixels.setPixelColor(i, 165, 242, 243); } for (int j = 255; j > 0; j=j-2)
-{
-pixels.setBrightness(j);
-pixels.show();
-delay(FadeSpeed);
-}
-}
-
-
-void NeoBlink(int num, int wait)
-{
-for (int i = 0; i < num; i++)
-{
-pixels.setPixelColor(i, 35, 35, 35);
-}
-pixels.show();
-delay(wait);
-for (int j = 0; j < num; j++)
-{
-pixels.setPixelColor(j, 0, 255, 0);
-}
-pixels.show();
-delay(wait);
-}
-
-void tarefa1(){
-  // Verifica se já passou 200 milisegundos
-  if((millis() - millisTarefa1) < 200){
-    // Acende o led do pino 7
-    digitalWrite(7, HIGH);
-  }else{
-    // Apaga o led do pino 7
-    digitalWrite(7, LOW);
-  }
-  // Verifica se já passou 400 milisegundos reinicia funcao
-  if((millis() - millisTarefa1) > 400){
-    millisTarefa1 = millis();
-  }
-  
-  void getData()
-{
-    tft.fillRect(1,170,64,20,TFT_BLACK);
-    tft.fillRect(1,210,64,20,TFT_BLACK);
-   if ((WiFi.status() == WL_CONNECTED)) { //Check the current connection status
- 
-    HTTPClient http;
- 
-    http.begin(endpoint + key); //Specify the URL
-    int httpCode = http.GET();  //Make the request
- 
-    if (httpCode > 0) { //Check for the returning code
- 
-         payload = http.getString();
-       // Serial.println(httpCode);
-        Serial.println(payload);
-        
-      }
- 
-    else {
-      Serial.println("Error on HTTP request");
-    }
- 
-    http.end(); //Free the resources
-  }
- char inp[1000];
- payload.toCharArray(inp,1000);
- deserializeJson(doc,inp);
-  
-  String tmp2 = doc["main"]["temp"];
-  String hum2 = doc["main"]["humidity"];
-  String town2 = doc["name"];
-  tmp=tmp2;
-  hum=hum2;
-  
-   Serial.println("Temperature"+String(tmp));
-   Serial.println("Humidity"+hum);
-   Serial.println(town);
+    NeoFade(100);
+    delay(1000);
+    ledazul();
+    delay(1000);
+    rainbowCycle(2000);
+    delay(1000);
+ Strobe(0xff, 0xff, 0xff, 10, 50, 1000);
+    delay(1000);
    
- }
-  
-  
-  
-  
+  }
+
 }
- 
