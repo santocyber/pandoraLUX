@@ -16,13 +16,16 @@
 #include <Adafruit_SSD1306.h>
 #include "DHT.h"//Carrega a biblioteca DHT
 
-dht11 DHT; // Cria um objeto p o sensor DHT11
 // Pino analógico em que o sensor DHT11 está conectado
 #define DHTPIN 4 
 //#define DHTTYPE DHT11   // DHT 11
 #define DHTTYPE DHT11   // DHT 22  (AM2302), AM2321
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 DHT dht(DHTPIN, DHTTYPE);
+
+float temperatureC;
+float temperatureF;
+float humidity;
 
 
 //Configura fuso horario em segundos
@@ -39,7 +42,7 @@ DHT dht(DHTPIN, DHTTYPE);
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, NTP_ADDRESS, NTP_OFFSET, NTP_INTERVAL);
 
-
+//define saidas do display
 #define OLED_MOSI  23
 #define OLED_CLK   18
 #define OLED_DC    4
@@ -74,6 +77,7 @@ int ldr = A0; //Atribui A0 a variável ldr
 int valorldr = 0;//Declara a variável valorldr como inteiro
 
 
+
 // Initialize Telegram BOT
 #define BOTtoken "5636503763:AAGVb0EGHIM3NbQICjdL0bRB8nbWdoAiKqc"  // your Bot Token (Get from Botfather)
 
@@ -82,10 +86,7 @@ int valorldr = 0;//Declara a variável valorldr como inteiro
 // message you
 #define CHAT_ID "-878096558"
 
-#ifdef ESP8266
-  X509List cert(TELEGRAM_CERTIFICATE_ROOT);
-#endif
-
+WiFiClientSecure secured_client;
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
 
@@ -384,17 +385,18 @@ ledazul();
 
 
                if (text == "temperatura") {
-                // Read temperature as Celsius (the default)
-float t = dht.readTemperature();
-      bot.sendMessage(chat_id, "A temperatura na luminaria eh", "");
-  bot.sendMessage(chat_id,"Temperatura:",t, "");
+String msg = "Temperature is ";
+          msg += msg.concat(temperatureC);
+          msg += "C";
+        bot.sendMessage(chat_id,msg, "");
 
     }
     
        if (text == "umidade") {
-float h = dht.readHumidity();
-      bot.sendMessage(chat_id, "A umidade na luminaria eh", "");
-  bot.sendMessage(chat_id,"Humidade:",h, "");
+          String msg = "Humidity is ";
+          msg += msg.concat(humidity);
+          msg += "%"; 
+          bot.sendMessage(chat_id,msg, ""); 
 
     }
    
@@ -441,6 +443,8 @@ Serial.println();
 Serial.print("Connecting to ");
 Serial.println(ssid);
 WiFi.begin(ssid, password);
+secured_client.setCACert(TELEGRAM_CERTIFICATE_ROOT); // Add root certificate for api.telegram.org
+
 while (WiFi.status() != WL_CONNECTED)
 {
 delay(500);
@@ -474,18 +478,21 @@ delay(2000); // Aguarda 2 segundos
 
 
 //mostra temperatura e umidade na tela
-DHT.read(dhtpin); //Lê as informações do sensor
+humidity = dht.readHumidity();
+  // Read temperature as Celsius (the default)
+   temperatureC = dht.readTemperature();
+
 
 // Exibindo valor da leitura do sensor de temperatura no display LCD
-display.clear(); // Limpa o display do LCD
+display.clearDisplay(); // Limpa o display do LCD
 display.setTextSize(3);
 display.print("Temperatura:"); // Imprime a string no display do LCD
-display.print(DHT.temperature);
+display.print(temperatureC);
 display.write(B11011111); // Símbolo de graus Celsius
 display.print("C");
 display.setCursor(0,1); // Coloca o cursor na linha 0 e coluna 1
 display.print("Umidade:");
-display.print(DHT.humidity);
+display.print(humidity);
 display.print("%");
 delay(2000); // Aguarda 2 segundos
 
