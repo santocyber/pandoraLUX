@@ -15,6 +15,22 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 #include "DHT.h"//Carrega a biblioteca DHT
+#include <Wire.h>
+#include <Adafruit_BMP280.h>
+#include <Adafruit_AHTX0.h>
+
+
+#define BMP_SCK  (13)
+#define BMP_MISO (12)
+#define BMP_MOSI (11)
+#define BMP_CS   (10)
+
+Adafruit_AHTX0 aht;
+Adafruit_BMP280 bmp; // I2C
+//Adafruit_BMP280 bmp(BMP_CS); // hardware SPI
+//Adafruit_BMP280 bmp(BMP_CS, BMP_MOSI, BMP_MISO,  BMP_SCK);
+
+
 
 // Pino analógico em que o sensor DHT11 está conectado
 #define DHTPIN 4 
@@ -23,9 +39,6 @@
 //#define DHTTYPE DHT21   // DHT 21 (AM2301)
 DHT dht(DHTPIN, DHTTYPE);
 
-float temperatureC;
-float temperatureF;
-float humidity;
 
 
 //Configura fuso horario em segundos
@@ -76,6 +89,9 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 int ldr = A0; //Atribui A0 a variável ldr
 int valorldr = 0;//Declara a variável valorldr como inteiro
 
+int valoratm = 0;//Declara a variável valorldr como inteiro
+int valortemp = 0;//Declara a variável valorldr como inteiro
+int valorhumi = 0;//Declara a variável valorldr como inteiro
 
 
 // Initialize Telegram BOT
@@ -328,6 +344,8 @@ void tarefa1(){
 void handleNewMessages(int numNewMessages) {
   Serial.println("handleNewMessages");
   Serial.println(String(numNewMessages));
+                    sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);
   
 
   for (int i=0; i<numNewMessages; i++) {
@@ -385,8 +403,10 @@ ledazul();
 
 
                if (text == "temperatura") {
+
+               
 String msg = "Temperature is ";
-          msg += msg.concat(temperatureC);
+          msg += msg.concat(temp.temperature);
           msg += "C";
         bot.sendMessage(chat_id,msg, "");
 
@@ -394,7 +414,7 @@ String msg = "Temperature is ";
     
        if (text == "umidade") {
           String msg = "Humidity is ";
-          msg += msg.concat(humidity);
+          msg += msg.concat(humidity.relative_humidity);
           msg += "%"; 
           bot.sendMessage(chat_id,msg, ""); 
 
@@ -425,11 +445,22 @@ String msg = "Temperature is ";
 
 
 void setup() {
+  Serial.begin(9600);
+
   
   
 //Inicia sensor temp e umi
 dht.begin();
+aht.begin();
+bmp.begin();
 
+
+bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
+                  Adafruit_BMP280::SAMPLING_X2,     /* Temp. oversampling */
+                  Adafruit_BMP280::SAMPLING_X16,    /* Pressure oversampling */
+                  Adafruit_BMP280::FILTER_X16,      /* Filtering. */
+                  Adafruit_BMP280::STANDBY_MS_500); /* Standby time. */
+                  
 
   
 //inicia LDR
@@ -437,7 +468,6 @@ dht.begin();
 pinMode(ldr, INPUT); //Define ldr (pino analógico A0) como saída
 
 
-Serial.begin(9600);
 Serial.println();
 Serial.println();
 Serial.print("Connecting to ");
@@ -466,6 +496,23 @@ display.begin(SSD1306_SWITCHCAPVCC);
 
 
 void loop() {
+   sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
+  Serial.print("Temperature: "); Serial.print(temp.temperature); Serial.println(" degrees C");
+  Serial.print("Humidity: "); Serial.print(humidity.relative_humidity); Serial.println("% rH");
+  
+    Serial.print(F("Temperature = "));
+    Serial.print(bmp.readTemperature());
+    Serial.println(" *C");
+
+    Serial.print(F("Pressure = "));
+    Serial.print(bmp.readPressure());
+    Serial.println(" Pa");
+
+    Serial.print(F("Approx altitude = "));
+    Serial.print(bmp.readAltitude(1013.25)); /* Adjusted to local forecast! */
+    Serial.println(" m");
+  
 //Mostra hora na tela
 timeClient.update();
 String formattedTime = timeClient.getFormattedTime();
@@ -478,21 +525,18 @@ delay(2000); // Aguarda 2 segundos
 
 
 //mostra temperatura e umidade na tela
-humidity = dht.readHumidity();
-  // Read temperature as Celsius (the default)
-   temperatureC = dht.readTemperature();
 
 
-// Exibindo valor da leitura do sensor de temperatura no display LCD
+// Exibindo valor da leitura do sensor de temperatura no display 
 display.clearDisplay(); // Limpa o display do LCD
 display.setTextSize(3);
 display.print("Temperatura:"); // Imprime a string no display do LCD
-display.print(temperatureC);
+display.print(temp.temperature);
 display.write(B11011111); // Símbolo de graus Celsius
 display.print("C");
 display.setCursor(0,1); // Coloca o cursor na linha 0 e coluna 1
 display.print("Umidade:");
-display.print(humidity);
+display.print(humidity.relative_humidity);
 display.print("%");
 delay(2000); // Aguarda 2 segundos
 
@@ -519,7 +563,7 @@ valorldr = analogRead(ldr);//Lê o valor do sensor ldr e armazena na variável v
     //Coloca led em alto para acioná-lo
 ledgreen();
 Serial.println("Ha algo sobre a mesa");
-bot.sendMessage(CHAT_ID,"Alguém colocou algo sobre mim");
+bot.sendMessage(CHAT_ID,"Alguém colocou algo sobre a mesa");
 
 
   }
@@ -536,5 +580,67 @@ bot.sendMessage(CHAT_ID,"Alguém colocou algo sobre mim");
     delay(1000);
    
   }
+
+
+
+//funcao pressao atm
+  
+valoratm = bmp.readPressure();
+Serial.println(valoratm);
+
+if ((valoratm) < 800) {
+//Coloca led em alto para acioná-lo
+ledazul();
+Serial.println("Vem chuva por ai");
+bot.sendMessage(CHAT_ID,"Vem chuva por ai");
+}
+if ((valoratm) > 900) { //Se o valor de valorldr for menor que 500:
+    //Coloca led em alto para acioná-lo
+ledamarelo();
+Serial.println("Olha o sol , ceu claro!");
+bot.sendMessage(CHAT_ID,"Olha o sol , ceu claro!");
+}
+//funcao temperatura
+  
+valortemp = bmp.readTemperature();
+Serial.println(valortemp);
+
+if ((valortemp) < 20) { //Se o valor de valorldr for menor que 500:
+//Coloca led em alto para acioná-lo
+ledazul();
+Serial.println("Cade o casaco de neve?");
+bot.sendMessage(CHAT_ID,"Cade o casaco de neve?");
+}
+  if ((valortemp) > 35) { //Se o valor de valorldr for menor que 500:
+    //Coloca led em alto para acioná-lo
+ledvermelho();
+Serial.println("Hora de dar um tibum na cachu!");
+bot.sendMessage(CHAT_ID,"Hora de dar um tibum na cachu!");
+}
+
+  
+//funcao humidade
+valorhumi = (humidity.relative_humidity);//Lê o valor do sensor ldr e armazena na variável valorldr
+Serial.println(valorhumi);//Imprime na serial os dados de valorldr
+
+if ((valorhumi) < 30) { //Se o valor de valorldr for menor que 500:
+//Coloca led em alto para acioná-lo
+ledazul();
+Serial.println("Tempo seco, beba agua");
+bot.sendMessage(CHAT_ID,"Tempo seco beba agua");
+}
+
+if ((valorhumi) > 90) { //Se o valor de valorldr for menor que 500:
+//Coloca led em alto para acioná-lo
+ledazul();
+Serial.println("Tempo umido, ta chovendo?");
+bot.sendMessage(CHAT_ID,"Tempo umido ta chovendo?");
+}
+
+
+
+
+
+
 
 }
