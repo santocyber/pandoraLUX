@@ -67,6 +67,7 @@ int valoratm = 0;//Declara a variável valorldr como inteiro
 int valortemp = 0;//Declara a variável valorldr como inteiro
 int valorhumi = 0;//Declara a variável valorldr como inteiro
 
+unsigned long millisTarefa1 = millis();
 
 //config time
 
@@ -319,6 +320,8 @@ void readTel()//Funçao que faz a leitura do Telegram.
 
 void verifica(){
 
+  if((millis() - millisTarefa1) < 300000){
+
 //funcao acende led quando valor de ldr cair
 
  // valorldr = analogRead(ldr);//Lê o valor do sensor ldr e armazena na variável valorldr
@@ -334,7 +337,7 @@ bot.sendMessage(id,"Alguém colocou algo sobre a mesa");
 
 
   }
-delay(50000);
+delay(2000);
 
 
 
@@ -350,7 +353,7 @@ if ((valoratm) < 800) {
 Serial.println("Vem chuva por ai");
 bot.sendMessage(id,"Vem chuva por ai");
 }
-delay(50000);
+delay(2000);
 if ((valoratm) > 1100) { //Se o valor de valorldr for menor que 500:
     //Coloca led em alto para acioná-lo
 //ledamarelo();
@@ -372,7 +375,7 @@ if ((valortemp) < 15) { //Se o valor de valorldr for menor que 500:
 Serial.println("Cade o casaco de neve?");
 bot.sendMessage(id,"Cade o casaco de neve?");
 }
-delay(50000);
+delay(2000);
 
   if ((valortemp) > 38){ //Se o valor de valorldr for menor que 500:
     //Coloca led em alto para acioná-lo
@@ -380,7 +383,7 @@ delay(50000);
 Serial.println("Hora de dar um tibum na cachu!");
 bot.sendMessage(id,"Hora de dar um tibum na cachu!");
 }
-delay(50000);
+delay(2000);
 
   
 //funcao humidade
@@ -403,17 +406,17 @@ if ((valorhumi) < 30) { //Se o valor de valorldr for menor que 500:
 Serial.println("Tempo seco, beba agua");
 bot.sendMessage(id,"Tempo seco beba agua");
 }
-delay(50000);
+delay(2000);
 if ((valorhumi) > 95){ //Se o valor de valorldr for menor que 500:
 //Coloca led em alto para acioná-lo
 //ledazul();
 Serial.println("Tempo umido, ta chovendo?");
 bot.sendMessage(id,"Tempo umido ta chovendo?");
 }
-delay(50000);
+delay(2000);
 
 
-}
+}}
 
 // Function to extract numbers from compile time string
 static uint8_t conv2d(const char* p) {
