@@ -41,33 +41,41 @@ Adafruit_BMP280 bmp; // I2C
 
 //Config LED Strip
 //Lista cores http://www.cdme.im-uff.mat.br/matrix/matrix-html/matrix_color_cube/matrix_color_cube_br.html
+//https://celke.com.br/artigo/tabela-de-cores-html-nome-hexadecimal-rgb
 //rainbow cycle https://www.tweaking4all.com/hardware/arduino/adruino-led-strip-effects/#rainbow_cycle.
-#define PIN        6
+#define PIN        4
 #define NUMPIXELS 60
 Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-#define DELAYVAL 500 // Time (in milliseconds) to pause between pixels
+#define DELAYVAL 200 // Time (in milliseconds) to pause between pixels
 
 
 int buzzerPin = 26;
 int ledPin = 27;
-int solenoidePin = 32;
-int drenagemPin = 33;
-int bldcPin = 25;
+
 const int buttonPin = 0;
 const int button2Pin = 35;
 int valorbutton = 0;
 
 
 //Ldr config
-
-int ldr = 36; //Atribui A0 a variável ldr
+int ahtPin = 14;
+int ldr = 34; //Atribui A0 a variável ldr
 int valorldr = 0;//Declara a variável valorldr como inteiro
 
 int valoratm = 0;//Declara a variável valorldr como inteiro
 int valortemp = 0;//Declara a variável valorldr como inteiro
 int valorhumi = 0;//Declara a variável valorldr como inteiro
 
+
+
 unsigned long millisTarefa1 = millis();
+
+unsigned long tempo2;
+unsigned long tempo3;
+unsigned long tempo4;
+unsigned long tempo5;
+unsigned long tempo6;
+
 
 //config time
 
@@ -82,45 +90,46 @@ unsigned int colour = 0;
 
 
 
-void ledazul(){
+
+//####################################################
+
+
+void ledgreen (){
+ if (millis() - tempo2 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
    pixels.clear(); // Set all pixel colors to 'off'
-
-  // The first NeoPixel in a strand is #0, second is 1, all the way up
-  // to the count of pixels minus one.
   for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
-
-    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
-    // Here we're using a moderately bright green color:
-    pixels.setPixelColor(i, pixels.Color(0, 0, 150));
-
+    pixels.setPixelColor(i, pixels.Color(0, 150, 0));
     pixels.show();   // Send the updated pixel colors to the hardware.
-
     delay(DELAYVAL); // Pause before next pass through loop
-}
+}}}
 
-}
+void ledazul(){
+ if (millis() - tempo2 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+   pixels.clear(); // Set all pixel colors to 'off'
+  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
+    pixels.setPixelColor(i, pixels.Color(0, 0, 150));
+    pixels.show();   // Send the updated pixel colors to the hardware.
+    delay(DELAYVAL); // Pause before next pass through loop
+}}}
 
 void ledamarelo(){
-
-    pixels.clear(); // Set all pixel colors to 'off'
-
-  // The first NeoPixel in a strand is #0, second is 1, all the way up
-  // to the count of pixels minus one.
+ if (millis() - tempo2 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+   pixels.clear(); // Set all pixel colors to 'off'
   for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
-
-    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
-    // Here we're using a moderately bright green color:
-    pixels.setPixelColor(i, pixels.Color(255, 255, 0));
-
+    pixels.setPixelColor(i, pixels.Color(255, 250, 0));
     pixels.show();   // Send the updated pixel colors to the hardware.
-
     delay(DELAYVAL); // Pause before next pass through loop
-}
-
-}
+}}}
 
 void ledvermelho(){
-   pixels.clear(); // Set all pixel colors to 'off'
+
+
+    if (millis() - tempo > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+  pixels.clear(); // Set all pixel colors to 'off'
 
   // The first NeoPixel in a strand is #0, second is 1, all the way up
   // to the count of pixels minus one.
@@ -131,15 +140,163 @@ void ledvermelho(){
     pixels.setPixelColor(i, pixels.Color(150, 0, 0));
 
     pixels.show();   // Send the updated pixel colors to the hardware.
-
     delay(DELAYVAL); // Pause before next pass through loop
+}}}
+
+
+
+void branco(){
+
+
+    if (millis() - tempo > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+  pixels.clear(); // Set all pixel colors to 'off'
+
+  // The first NeoPixel in a strand is #0, second is 1, all the way up
+  // to the count of pixels minus one.
+  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
+
+    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+    // Here we're using a moderately bright green color:
+    pixels.setPixelColor(i, pixels.Color(255, 255, 255));
+    pixels.setBrightness(255);
+    pixels.show();   // Send the updated pixel colors to the hardware.
+
+ //   delay(DELAYVAL); // Pause before next pass through loop
+}}}
+
+
+void strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, int EndPause){
+  for(int j = 0; j < StrobeCount; j++) {
+    setAll(red,green,blue);
+    pixels.show();
+    delay(FlashDelay);
+    setAll(0,0,0);
+    pixels.show();
+    delay(FlashDelay);
+  }
+ 
+ delay(EndPause);
 }
 
+
+  
+
+void NeoFade(int FadeSpeed)
+{
+int fspeed;
+for (int i = 0; i < NUMPIXELS; i++) { pixels.setPixelColor(i, 165, 242, 243); } for (int j = 255; j > 0; j=j-2)
+{
+pixels.setBrightness(j);
+pixels.show();
+delay(FadeSpeed);
+}
+}
+
+
+void rainbow(int wait) {
+  // Hue of first pixel runs 3 complete loops through the color wheel.
+  // Color wheel has a range of 65536 but it's OK if we roll over, so
+  // just count from 0 to 3*65536. Adding 256 to firstPixelHue each time
+  // means we'll make 3*65536/256 = 768 passes through this outer loop:
+  for(long firstPixelHue = 0; firstPixelHue < 3*65536; firstPixelHue += 256) {
+    for(int i=0; i<pixels.numPixels(); i++) { // For each pixel in pixels...
+      // Offset pixel hue by an amount to make one full revolution of the
+      // color wheel (range of 65536) along the length of the strip
+      // (strip.numPixels() steps):
+      int pixelHue = firstPixelHue + (i * 65536L / pixels.numPixels());
+      // pixels.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
+      // optionally add saturation and value (brightness) (each 0 to 255).
+      // Here we're using just the single-argument hue variant. The result
+      // is passed through pixels.gamma32() to provide 'truer' colors
+      // before assigning to each pixel:
+      pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(pixelHue)));
+    }
+    pixels.show(); // Update strip with new contents
+    delay(wait);  // Pause for a moment
+  }
+}
+
+void setPixel(int Pixel, byte red, byte green, byte blue) {
+ #ifdef ADAFRUIT_NEOPIXEL_H
+   // NeoPixel
+   pixels.setPixelColor(Pixel, pixels.Color(red, green, blue));
+ #endif
+ #ifndef ADAFRUIT_NEOPIXEL_H
+   // FastLED
+   leds[Pixel].r = red;
+   leds[Pixel].g = green;
+   leds[Pixel].b = blue;
+ #endif
+}
+
+void setAll(byte red, byte green, byte blue) {
+  for(int i = 0; i < NUMPIXELS; i++ ) {
+    setPixel(i, red, green, blue);
+  }
+  pixels.show();
 }
 
 
 
+void runninglights(byte red, byte green, byte blue, int WaveDelay) {
+  int Position=0;
+ 
+  for(int j=0; j<NUMPIXELS*2; j++)
+  {
+      Position++; // = 0; //Position + Rate;
+      for(int i=0; i<NUMPIXELS; i++) {
+        // sine wave, 3 offset waves make a rainbow!
+        //float level = sin(i+Position) * 127 + 128;
+        //setPixel(i,level,0,0);
+        //float level = sin(i+Position) * 127 + 128;
+        setPixel(i,((sin(i+Position) * 127 + 128)/255)*red,
+                   ((sin(i+Position) * 127 + 128)/255)*green,
+                   ((sin(i+Position) * 127 + 128)/255)*blue);
+      }
+     
+      pixels.show();
+      delay(WaveDelay);
+  }
+}
 
+
+
+void rainbowcycle(int SpeedDelay) {
+  byte *c;
+  uint16_t i, j;
+
+  for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
+    for(i=0; i< NUMPIXELS; i++) {
+      c=Wheel(((i * 256 / NUMPIXELS) + j) & 255);
+      setPixel(i, *c, *(c+1), *(c+2));
+    }
+    pixels.show();
+    delay(SpeedDelay);
+  }
+}
+
+byte * Wheel(byte WheelPos) {
+  static byte c[3];
+ 
+  if(WheelPos < 85) {
+   c[0]=WheelPos * 3;
+   c[1]=255 - WheelPos * 3;
+   c[2]=0;
+  } else if(WheelPos < 170) {
+   WheelPos -= 85;
+   c[0]=255 - WheelPos * 3;
+   c[1]=0;
+   c[2]=WheelPos * 3;
+  } else {
+   WheelPos -= 170;
+   c[0]=0;
+   c[1]=WheelPos * 3;
+   c[2]=255 - WheelPos * 3;
+  }
+
+  return c;
+}
 
 
 
@@ -150,7 +307,11 @@ void ledvermelho(){
 void setup()
 {
 
+pinMode(ldr, INPUT); 
 
+
+
+pixels.begin();
 aht.begin();
 bmp.begin();
 
@@ -185,8 +346,18 @@ bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
   Serial.print("Retrieving time: ");
   configTime(0, 0, "pool.ntp.org"); // get UTC time via NTP
   time_t now = time(nullptr);
-
+  while (now < 24 * 3600)
+  {
+    Serial.print(".");
+    delay(100);
+    now = time(nullptr);
+  }
   Serial.println(now);
+           readTel();
+           bot.sendMessage(id, "Pandora Conectada...", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+           strobe(0xff, 0xff, 0xff, 10, 50, 1000);
+
+
 }
 
 void loop()
@@ -196,13 +367,20 @@ void loop()
       connect();//Funçao para verificar se ainda há conexao
       readTel();//Funçao para ler o telegram
       tempo = millis();//Reseta o tempo
+     
    }
 
+  if (millis() - tempo2 > 3600000)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+       verifica();
+     
+   }
 
-
-verifica();
-
-
+  if (millis() - tempo3 > 3600000)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+       verifica2();
+     
+   }
 
 
    
@@ -234,57 +412,97 @@ void readTel()//Funçao que faz a leitura do Telegram.
 
       if (text.indexOf("LEDON") > -1)//Caso o texto recebido contenha "ON"
       {
-         //digitalWrite(D4, 0);//Liga o LED
+       
+         branco();
          bot.sendMessage(id, "LED ON", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }
 
       else if (text.indexOf("LEDOFF") > -1)//Caso o texto recebido contenha "OFF"
       {
-         //digitalWrite(D4, 1);//Desliga o LED
+         pixels.clear(); // Set all pixel colors to 'off'
+
          bot.sendMessage(id, "LED OFF", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }
   else if (text.indexOf("verde") > -1)//Caso o texto recebido contenha "OFF"
       {
-         //digitalWrite(D4, 1);//Desliga o LED
-         bot.sendMessage(id, "verde", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+     
+         bot.sendMessage(id, "ta tudo green!", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+         ledgreen();
       }  
          
      else if (text.indexOf("vermelho") > -1)//Caso o texto recebido contenha "OFF"
-      {
-         //digitalWrite(D4, 1);//Desliga o LED
-         bot.sendMessage(id, "vermelho", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+      {       
+         bot.sendMessage(id, "vermelhuuuuuuu", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+         ledvermelho();
       }    
       else if (text.indexOf("amarelo") > -1)//Caso o texto recebido contenha "OFF"
       {
-         //digitalWrite(D4, 1);//Desliga o LED
-         bot.sendMessage(id, "amarelo", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+         bot.sendMessage(id, "amareluuuuuuuuuu", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+         ledamarelo();
+      }
+      else if (text.indexOf("fade") > -1)//Caso o texto recebido contenha "OFF"
+      {
+         NeoFade(100);
+         bot.sendMessage(id, "smothieeeee", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+      }    
+      else if (text.indexOf("runninglights") > -1)//Caso o texto recebido contenha "OFF"
+      {
+         runninglights(0,0,255,100);
+         bot.sendMessage(id, "corre gira", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+      }   
+      else if (text.indexOf("arcoiris") > -1)//Caso o texto recebido contenha "OFF"
+      {
+         rainbowcycle(100);
+         bot.sendMessage(id, "LGBTQI+-", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+      }
+      else if (text.indexOf("strobe") > -1)//Caso o texto recebido contenha "OFF"
+      {
+         if (millis() - tempo4 > 1000)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+
+         strobe(0xff, 0xff, 0xff, 60, 50, 10);
+         strobe(0, 0, 0xff, 60, 50, 10);
+         strobe(0, 250, 154, 60, 50, 10);
+         strobe(154, 0, 0xff, 60, 50, 10);
+     
+   }
+
+         
+         bot.sendMessage(id, "piscanduuuu", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+      }
+       else if (text.indexOf("rainbow") > -1)//Caso o texto recebido contenha "OFF"
+      {
+         rainbow(10);
+         bot.sendMessage(id, "cada celulinha do meu corpo esta alegre", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }
            else if (text.indexOf("azul") > -1)//Caso o texto recebido contenha "OFF"
       {
-         //digitalWrite(D4, 1);//Desliga o LED
-         bot.sendMessage(id, "azul", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+         bot.sendMessage(id, "ta tudo bluee", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+         ledazul();     
       }
       else if (text.indexOf("branco") > -1)//Caso o texto recebido contenha "START"
       {
-       //digitalWrite(D4, 1);//Desliga o LED
-         bot.sendMessage(id, "branco", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+         branco();
+         bot.sendMessage(id, "Luz ligada", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }
       else if (text.indexOf("clima") > -1)//Caso o texto recebido contenha "START"
       {
-          bot.sendMessage(id, "Clima agora, temperatura, humidade e pressao", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+          bot.sendMessage(id, "temperatura, humidade e pressao", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
           
-          String msg = "Temperature is ";
+          String msg = "Temperature eh ";
           msg += msg.concat(temp.temperature);
           msg += "C";
-          msg += "Humidity is ";
+          msg += " - ";
+          msg += "Humidity eh ";
           msg += msg.concat(humidity.relative_humidity);
           msg += "%"; 
-          msg += "Pressao is ";
+          msg += " - ";
+          msg += "Pressao eh";
           msg += msg.concat(bmp.readPressure());
           msg += "Pa"; 
           bot.sendMessage(id, msg, "");     
      }
-      else if (text.indexOf("Start") > -1)//Caso o texto recebido contenha "START"
+      else if (text.indexOf("start") > -1)//Caso o texto recebido contenha "START"
       {
       if (from_name == "")
       from_name = "Guest";
@@ -292,20 +510,20 @@ void readTel()//Funçao que faz a leitura do Telegram.
       welcome = "Bem vindo, " + from_name + ".\n";
       welcome += "Essa eh a PandoraBOT\n\n";
       welcome += "/branco : Para ligar o LED branco\n";
-      welcome += "/azul : Para ligar o LED branco\n";
-      welcome += "/amarelo : Para ligar o LED branco\n";
-      welcome += "/vermelho : Para ligar o LED branco\n";
-      welcome += "/verde : Para ligar o LED branco\n";
-      welcome += "/branco : Para ligar o LED branco\n";
-      welcome += "/rainbow : Para ligar o LED branco\n";
-      welcome += "/strobe : Para ligar o LED branco\n";
-      welcome += "/temperatura : Para ligar o LED branco\n";
-      welcome += "/humidade : Para ligar o LED branco\n";
-      welcome += "/pressao : Para ligar o LED branco\n";
-      welcome += "/clima : Para ligar o LED branco\n";
-      welcome += "/LEDON: Liga o LED em modo randomico\n";
+      welcome += "/azul : Para ligar o LED \n";
+      welcome += "/amarelo : Para ligar o LED \n";
+      welcome += "/vermelho : Para ligar o LED \n";
+      welcome += "/verde : Para ligar o LED verde\n";
+      welcome += "/runninglights : Para ligar o LED\n";
+      welcome += "/rainbow : Para ligar o LED \n";
+      welcome += "/arcoiris : Para ligar o LED \n";
+      welcome += "/strobe : Para ligar o STROBE\n";
+      welcome += "/clima : Para verificar temperatura, humidade e pressao\n";
+      welcome += "/LEDON: Liga o LED \n";
       welcome += "/LEDOFF: Para desligar o LED\n";
-      welcome += "/Start : Abre esse menu\n";
+      welcome += "/start : Abre esse menu\n";
+      welcome += "codigo fonte em https://github.com/santocyber/pandoraLUX\n";
+
       bot.sendMessage(id, welcome, "Markdown");      
       }
 
@@ -320,26 +538,27 @@ void readTel()//Funçao que faz a leitura do Telegram.
 
 void verifica(){
 
-  if((millis() - millisTarefa1) < 300000){
-
 //funcao acende led quando valor de ldr cair
 
- // valorldr = analogRead(ldr);//Lê o valor do sensor ldr e armazena na variável valorldr
+//Lê o valor do sensor ldr e armazena na variável valorldr
+valorldr = analogRead(ldr);
 
-valorldr = 800;//Lê o valor do sensor ldr e armazena na variável valorldr
   Serial.println(valorldr);//Imprime na serial os dados de valorldr
 
-  if ((valorldr) < 500) { //Se o valor de valorldr for menor que 500:
+  if ((valorldr) > 500) { //Se o valor de valorldr for menor que 500:
     //Coloca led em alto para acioná-lo
-//ledgreen();
-Serial.println("Ha algo sobre a mesa");
-bot.sendMessage(id,"Alguém colocou algo sobre a mesa");
+Serial.println("Quem apagou a luz");
+bot.sendMessage(id, "Quem apagou a luz?");
+}else{
+  Serial.println("luz acesa");
+bot.sendMessage(id, "luz acesa?");
+}
+
+}
 
 
-  }
-delay(2000);
 
-
+void verifica2(){
 
 //funcao pressao atm
 //  valoratm = bmp.readPressure();
@@ -353,7 +572,7 @@ if ((valoratm) < 800) {
 Serial.println("Vem chuva por ai");
 bot.sendMessage(id,"Vem chuva por ai");
 }
-delay(2000);
+
 if ((valoratm) > 1100) { //Se o valor de valorldr for menor que 500:
     //Coloca led em alto para acioná-lo
 //ledamarelo();
@@ -375,7 +594,7 @@ if ((valortemp) < 15) { //Se o valor de valorldr for menor que 500:
 Serial.println("Cade o casaco de neve?");
 bot.sendMessage(id,"Cade o casaco de neve?");
 }
-delay(2000);
+
 
   if ((valortemp) > 38){ //Se o valor de valorldr for menor que 500:
     //Coloca led em alto para acioná-lo
@@ -383,7 +602,7 @@ delay(2000);
 Serial.println("Hora de dar um tibum na cachu!");
 bot.sendMessage(id,"Hora de dar um tibum na cachu!");
 }
-delay(2000);
+
 
   
 //funcao humidade
@@ -406,17 +625,16 @@ if ((valorhumi) < 30) { //Se o valor de valorldr for menor que 500:
 Serial.println("Tempo seco, beba agua");
 bot.sendMessage(id,"Tempo seco beba agua");
 }
-delay(2000);
+
 if ((valorhumi) > 95){ //Se o valor de valorldr for menor que 500:
 //Coloca led em alto para acioná-lo
 //ledazul();
 Serial.println("Tempo umido, ta chovendo?");
 bot.sendMessage(id,"Tempo umido ta chovendo?");
 }
-delay(2000);
 
 
-}}
+}
 
 // Function to extract numbers from compile time string
 static uint8_t conv2d(const char* p) {
