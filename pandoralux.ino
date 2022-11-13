@@ -14,7 +14,7 @@
 #define WIFI_SSID "InternetSA"
 #define WIFI_PASSWORD "cadebabaca"
 // Telegram BOT Token (Get from Botfather)
-#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -511,11 +511,11 @@ void readTel()//Funçao que faz a leitura do Telegram.
             else if (text.indexOf("violeta") > -1)//Caso o texto recebido contenha "OFF"
       {
          bot.sendMessage(id, "Violet", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
-         ledamarelo();
+         ledvioleta();
       }
             else if (text.indexOf("ciano") > -1)//Caso o texto recebido contenha "OFF"
       {
-         bot.sendMessage(id, "verde bb", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+         bot.sendMessage(id, "verde azulado ciano a mistura de verde e azul", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
          ledciano();
       }
       else if (text.indexOf("fade") > -1)//Caso o texto recebido contenha "OFF"
