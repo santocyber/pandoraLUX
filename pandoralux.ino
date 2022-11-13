@@ -14,7 +14,7 @@
 #define WIFI_SSID "InternetSA"
 #define WIFI_PASSWORD "cadebabaca"
 // Telegram BOT Token (Get from Botfather)
-#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -237,8 +237,6 @@ void ledoff(){
 
 
 void strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, int EndPause){
-  if (millis() - tempo7 > 2000)
-       {
   for(int j = 0; j < StrobeCount; j++) {
     setAll(red,green,blue);
     pixels.show();
@@ -249,8 +247,7 @@ void strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, in
   }
  
  delay(EndPause);
- tempo4 = millis();
-}}
+}
 
 
   
@@ -441,14 +438,14 @@ void loop()
      
    }
 
-  if (millis() - tempo5 > 36000000)//Faz a verificaçao das funçoes a cada 2 Segundos
+  if (millis() - tempo5 > 72000000)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
       verifica();
       tempo5 = millis();
      
    }
 
-  if (millis() - tempo6 > 36000000)//Faz a verificaçao das funçoes a cada 2 Segundos
+  if (millis() - tempo6 > 72000000)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
        verifica2();
        tempo6 = millis();
@@ -597,12 +594,13 @@ void readTel()//Funçao que faz a leitura do Telegram.
       welcome += "/azul : Para ligar o LED \n";
       welcome += "/amarelo : Para ligar o LED \n";
       welcome += "/violeta : Para ligar o LED \n";
-      welcome += "/ciano : Para ligar o LED verde\n"
+      welcome += "/ciano : Para ligar o LED \n";
       welcome += "/vermelho : Para ligar o LED \n";
       welcome += "/verde : Para ligar o LED verde\n";
       welcome += "/runninglights : Para ligar o LED\n";
       welcome += "/rainbow : Para ligar o LED \n";
       welcome += "/arcoiris : Para ligar o LED \n";
+      welcome += "/piscapisca : Para ligar o STROBE\n";
       welcome += "/strobe : Para ligar o STROBE\n";
       welcome += "/fade : Para Dimmerizar \n";
       welcome += "/clima : Para verificar temperatura, humidade e pressao\n";
@@ -632,7 +630,7 @@ valorldr = analogRead(ldr);
 
   Serial.println(valorldr);//Imprime na serial os dados de valorldr
 
-  if ((valorldr) > 500) { //Se o valor de valorldr for menor que 500:
+  if ((valorldr) > 2500) { //Se o valor de valorldr for menor que 500:
     //Coloca led em alto para acioná-lo
 Serial.println("Quem apagou a luz");
 bot.sendMessage(id, "Quem apagou a luz? acende? /branco ou /verde");
