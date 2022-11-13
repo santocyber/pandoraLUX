@@ -14,7 +14,7 @@
 #define WIFI_SSID "InternetSA"
 #define WIFI_PASSWORD "cadebabaca"
 // Telegram BOT Token (Get from Botfather)
-#define BOTtoken "5636503763:AAGVb0EGHIM3NbQICjdL0bRB8nbWdoAiKqc"
+#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -69,12 +69,13 @@ int valorhumi = 0;//Declara a variável valorldr como inteiro
 
 
 unsigned long millisTarefa1 = millis();
+unsigned long tempo2 = millis();
+unsigned long tempo3 = millis();
+unsigned long tempo4 = millis();
+unsigned long tempo5 = millis();
+unsigned long tempo6 = millis();
+unsigned long tempo7 = millis();
 
-unsigned long tempo2;
-unsigned long tempo3;
-unsigned long tempo4;
-unsigned long tempo5;
-unsigned long tempo6;
 
 
 //config time
@@ -102,7 +103,9 @@ void ledgreen (){
     pixels.setPixelColor(i, pixels.Color(0, 150, 0));
     pixels.show();   // Send the updated pixel colors to the hardware.
     delay(DELAYVAL); // Pause before next pass through loop
-}}}
+}}
+tempo2 = millis();
+}
 
 void ledazul(){
  if (millis() - tempo2 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
@@ -127,7 +130,7 @@ void ledamarelo(){
 void ledvermelho(){
 
 
-    if (millis() - tempo > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
+    if (millis() - tempo2 > 2500)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
   pixels.clear(); // Set all pixel colors to 'off'
 
@@ -141,7 +144,53 @@ void ledvermelho(){
 
     pixels.show();   // Send the updated pixel colors to the hardware.
     delay(DELAYVAL); // Pause before next pass through loop
-}}}
+}}
+tempo2 = millis();
+}
+
+void ledvioleta(){
+
+
+    if (millis() - tempo2 > 2500)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+  pixels.clear(); // Set all pixel colors to 'off'
+
+  // The first NeoPixel in a strand is #0, second is 1, all the way up
+  // to the count of pixels minus one.
+  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
+
+    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+    // Here we're using a moderately bright green color:
+    pixels.setPixelColor(i, pixels.Color(238, 130, 238));
+
+    pixels.show();   // Send the updated pixel colors to the hardware.
+    delay(DELAYVAL); // Pause before next pass through loop
+}}
+tempo2 = millis();
+}
+
+
+
+void ledciano(){
+
+
+    if (millis() - tempo2 > 2500)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+  pixels.clear(); // Set all pixel colors to 'off'
+
+  // The first NeoPixel in a strand is #0, second is 1, all the way up
+  // to the count of pixels minus one.
+  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
+
+    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+    // Here we're using a moderately bright green color:
+    pixels.setPixelColor(i, pixels.Color(0, 255, 255));
+
+    pixels.show();   // Send the updated pixel colors to the hardware.
+    delay(DELAYVAL); // Pause before next pass through loop
+}}
+tempo2 = millis();
+}
 
 
 
@@ -165,8 +214,31 @@ void branco(){
  //   delay(DELAYVAL); // Pause before next pass through loop
 }}}
 
+void ledoff(){
+
+
+    if (millis() - tempo > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+  pixels.clear(); // Set all pixel colors to 'off'
+
+  // The first NeoPixel in a strand is #0, second is 1, all the way up
+  // to the count of pixels minus one.
+  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
+
+    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
+    // Here we're using a moderately bright green color:
+    pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+    pixels.setBrightness(255);
+    pixels.show();   // Send the updated pixel colors to the hardware.
+
+ //   delay(DELAYVAL); // Pause before next pass through loop
+}}}
+
+
 
 void strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, int EndPause){
+  if (millis() - tempo7 > 2000)
+       {
   for(int j = 0; j < StrobeCount; j++) {
     setAll(red,green,blue);
     pixels.show();
@@ -177,7 +249,8 @@ void strobe(byte red, byte green, byte blue, int StrobeCount, int FlashDelay, in
   }
  
  delay(EndPause);
-}
+ tempo4 = millis();
+}}
 
 
   
@@ -242,7 +315,7 @@ void setAll(byte red, byte green, byte blue) {
 void runninglights(byte red, byte green, byte blue, int WaveDelay) {
   int Position=0;
  
-  for(int j=0; j<NUMPIXELS*2; j++)
+  for(int j=0; j<NUMPIXELS*5; j++)
   {
       Position++; // = 0; //Position + Rate;
       for(int i=0; i<NUMPIXELS; i++) {
@@ -261,17 +334,16 @@ void runninglights(byte red, byte green, byte blue, int WaveDelay) {
 }
 
 
-
 void rainbowcycle(int SpeedDelay) {
   byte *c;
   uint16_t i, j;
 
-  for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
+  for(j=0; j<256*1; j++) { // 5 cycles of all colors on wheel
     for(i=0; i< NUMPIXELS; i++) {
       c=Wheel(((i * 256 / NUMPIXELS) + j) & 255);
       setPixel(i, *c, *(c+1), *(c+2));
     }
-    pixels.show();
+pixels.show();
     delay(SpeedDelay);
   }
 }
@@ -297,8 +369,6 @@ byte * Wheel(byte WheelPos) {
 
   return c;
 }
-
-
 
 
 
@@ -355,6 +425,7 @@ bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
   Serial.println(now);
            readTel();
            bot.sendMessage(id, "Pandora Conectada...", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+           Serial.println("Pandora Conectada...");
            strobe(0xff, 0xff, 0xff, 10, 50, 1000);
 
 
@@ -370,15 +441,17 @@ void loop()
      
    }
 
-  if (millis() - tempo2 > 3600000)//Faz a verificaçao das funçoes a cada 2 Segundos
+  if (millis() - tempo5 > 36000000)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
-       verifica();
+      verifica();
+      tempo5 = millis();
      
    }
 
-  if (millis() - tempo3 > 3600000)//Faz a verificaçao das funçoes a cada 2 Segundos
+  if (millis() - tempo6 > 36000000)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
        verifica2();
+       tempo6 = millis();
      
    }
 
@@ -412,20 +485,18 @@ void readTel()//Funçao que faz a leitura do Telegram.
 
       if (text.indexOf("LEDON") > -1)//Caso o texto recebido contenha "ON"
       {
-       
          branco();
          bot.sendMessage(id, "LED ON", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }
 
       else if (text.indexOf("LEDOFF") > -1)//Caso o texto recebido contenha "OFF"
       {
-         pixels.clear(); // Set all pixel colors to 'off'
-
-         bot.sendMessage(id, "LED OFF", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+        NeoFade(100);
+        ledoff();
+        bot.sendMessage(id, "LED OFF", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }
-  else if (text.indexOf("verde") > -1)//Caso o texto recebido contenha "OFF"
+       else if (text.indexOf("verde") > -1)//Caso o texto recebido contenha "OFF"
       {
-     
          bot.sendMessage(id, "ta tudo green!", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
          ledgreen();
       }  
@@ -440,36 +511,49 @@ void readTel()//Funçao que faz a leitura do Telegram.
          bot.sendMessage(id, "amareluuuuuuuuuu", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
          ledamarelo();
       }
+            else if (text.indexOf("violeta") > -1)//Caso o texto recebido contenha "OFF"
+      {
+         bot.sendMessage(id, "Violet", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+         ledamarelo();
+      }
+            else if (text.indexOf("ciano") > -1)//Caso o texto recebido contenha "OFF"
+      {
+         bot.sendMessage(id, "verde bb", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+         ledciano();
+      }
       else if (text.indexOf("fade") > -1)//Caso o texto recebido contenha "OFF"
       {
-         NeoFade(100);
+         NeoFade(1000);
          bot.sendMessage(id, "smothieeeee", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }    
       else if (text.indexOf("runninglights") > -1)//Caso o texto recebido contenha "OFF"
       {
-         runninglights(0,0,255,100);
+         runninglights(0,0,255,500);
          bot.sendMessage(id, "corre gira", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }   
       else if (text.indexOf("arcoiris") > -1)//Caso o texto recebido contenha "OFF"
       {
-         rainbowcycle(100);
+         rainbowcycle(10);
          bot.sendMessage(id, "LGBTQI+-", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }
       else if (text.indexOf("strobe") > -1)//Caso o texto recebido contenha "OFF"
       {
-         if (millis() - tempo4 > 1000)//Faz a verificaçao das funçoes a cada 2 Segundos
-   {
+        bot.sendMessage(id, "piscanduuuu", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
 
          strobe(0xff, 0xff, 0xff, 60, 50, 10);
          strobe(0, 0, 0xff, 60, 50, 10);
          strobe(0, 250, 154, 60, 50, 10);
          strobe(154, 0, 0xff, 60, 50, 10);
      
-   }
 
-         
-         bot.sendMessage(id, "piscanduuuu", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }
+
+      else if (text.indexOf("piscapisca") > -1)//Caso o texto recebido contenha "OFF"
+      {
+      bot.sendMessage(id, "piscanduuuu verde 400x", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+      strobe(0, 250, 154, 400, 50, 10);
+      }    
+       
        else if (text.indexOf("rainbow") > -1)//Caso o texto recebido contenha "OFF"
       {
          rainbow(10);
@@ -502,7 +586,7 @@ void readTel()//Funçao que faz a leitura do Telegram.
           msg += "Pa"; 
           bot.sendMessage(id, msg, "");     
      }
-      else if (text.indexOf("start") > -1)//Caso o texto recebido contenha "START"
+      else if(text.indexOf("start") > -1)//Caso o texto recebido contenha "START"
       {
       if (from_name == "")
       from_name = "Guest";
@@ -512,12 +596,15 @@ void readTel()//Funçao que faz a leitura do Telegram.
       welcome += "/branco : Para ligar o LED branco\n";
       welcome += "/azul : Para ligar o LED \n";
       welcome += "/amarelo : Para ligar o LED \n";
+      welcome += "/violeta : Para ligar o LED \n";
+      welcome += "/ciano : Para ligar o LED verde\n"
       welcome += "/vermelho : Para ligar o LED \n";
       welcome += "/verde : Para ligar o LED verde\n";
       welcome += "/runninglights : Para ligar o LED\n";
       welcome += "/rainbow : Para ligar o LED \n";
       welcome += "/arcoiris : Para ligar o LED \n";
       welcome += "/strobe : Para ligar o STROBE\n";
+      welcome += "/fade : Para Dimmerizar \n";
       welcome += "/clima : Para verificar temperatura, humidade e pressao\n";
       welcome += "/LEDON: Liga o LED \n";
       welcome += "/LEDOFF: Para desligar o LED\n";
@@ -548,12 +635,12 @@ valorldr = analogRead(ldr);
   if ((valorldr) > 500) { //Se o valor de valorldr for menor que 500:
     //Coloca led em alto para acioná-lo
 Serial.println("Quem apagou a luz");
-bot.sendMessage(id, "Quem apagou a luz?");
+bot.sendMessage(id, "Quem apagou a luz? acende? /branco ou /verde");
 }else{
   Serial.println("luz acesa");
-bot.sendMessage(id, "luz acesa?");
+bot.sendMessage(id, "luz acesa? ");
 }
-
+//delay(600000);
 }
 
 
@@ -568,14 +655,14 @@ Serial.println(valoratm);
 
 if ((valoratm) < 800) {
 //Coloca led em alto para acioná-lo
-//ledazul();
+ledazul();
 Serial.println("Vem chuva por ai");
 bot.sendMessage(id,"Vem chuva por ai");
 }
 
 if ((valoratm) > 1100) { //Se o valor de valorldr for menor que 500:
     //Coloca led em alto para acioná-lo
-//ledamarelo();
+ledamarelo();
 Serial.println("Olha o sol , ceu claro!");
 bot.sendMessage(id,"Olha o sol , ceu claro!");
 }
@@ -590,7 +677,7 @@ Serial.println(valortemp);
 
 if ((valortemp) < 15) { //Se o valor de valorldr for menor que 500:
 //Coloca led em alto para acioná-lo
-//ledazul();
+ledazul();
 Serial.println("Cade o casaco de neve?");
 bot.sendMessage(id,"Cade o casaco de neve?");
 }
@@ -598,7 +685,7 @@ bot.sendMessage(id,"Cade o casaco de neve?");
 
   if ((valortemp) > 38){ //Se o valor de valorldr for menor que 500:
     //Coloca led em alto para acioná-lo
-//ledvermelho();
+ledvermelho();
 Serial.println("Hora de dar um tibum na cachu!");
 bot.sendMessage(id,"Hora de dar um tibum na cachu!");
 }
@@ -632,6 +719,7 @@ if ((valorhumi) > 95){ //Se o valor de valorldr for menor que 500:
 Serial.println("Tempo umido, ta chovendo?");
 bot.sendMessage(id,"Tempo umido ta chovendo?");
 }
+//delay(600000);
 
 
 }
