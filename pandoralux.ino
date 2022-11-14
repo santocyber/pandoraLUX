@@ -14,7 +14,7 @@
 #define WIFI_SSID "InternetSA"
 #define WIFI_PASSWORD "cadebabaca"
 // Telegram BOT Token (Get from Botfather)
-#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -26,16 +26,8 @@ unsigned long tempo;
 
 //config BMP
 
-#define BMP_SCK  (13)
-#define BMP_MISO (12)
-#define BMP_MOSI (11)
-#define BMP_CS   (10)
-
 Adafruit_AHTX0 aht;
 Adafruit_BMP280 bmp; // I2C
-//Adafruit_BMP280 bmp(BMP_CS); // hardware SPI
-//Adafruit_BMP280 bmp(BMP_CS, BMP_MOSI, BMP_MISO,  BMP_SCK);
-
 
 
 
@@ -115,7 +107,9 @@ void ledazul(){
     pixels.setPixelColor(i, pixels.Color(0, 0, 150));
     pixels.show();   // Send the updated pixel colors to the hardware.
     delay(DELAYVAL); // Pause before next pass through loop
-}}}
+}}
+tempo2 = millis();
+}
 
 void ledamarelo(){
  if (millis() - tempo2 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
@@ -125,7 +119,9 @@ void ledamarelo(){
     pixels.setPixelColor(i, pixels.Color(255, 250, 0));
     pixels.show();   // Send the updated pixel colors to the hardware.
     delay(DELAYVAL); // Pause before next pass through loop
-}}}
+}}
+tempo2 = millis();
+}
 
 void ledvermelho(){
 
@@ -438,17 +434,24 @@ void loop()
      
    }
 
-  if (millis() - tempo5 > 72000000)//Faz a verificaçao das funçoes a cada 2 Segundos
+  if (millis() - tempo5 > 36000000)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
       verifica();
       tempo5 = millis();
      
    }
 
-  if (millis() - tempo6 > 72000000)//Faz a verificaçao das funçoes a cada 2 Segundos
+  if (millis() - tempo6 > 36000000)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
        verifica2();
        tempo6 = millis();
+     
+   }
+   
+  if (millis() - tempo7 > 144000000)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+       verifica3();
+       tempo7 = millis();
      
    }
 
@@ -467,8 +470,9 @@ void connect()//Funçao para Conectar ao wifi e verificar à conexao.
 
 void readTel()//Funçao que faz a leitura do Telegram.
 {
-     sensors_event_t humidity, temp;
+  sensors_event_t humidity, temp;
   aht.getEvent(&humidity, &temp);
+   
    int newmsg = bot.getUpdates(bot.last_message_received + 1);
 
    for (int i = 0; i < newmsg; i++)//Caso haja X mensagens novas, fara este loop X Vezes.
@@ -541,6 +545,11 @@ void readTel()//Funçao que faz a leitura do Telegram.
          strobe(0, 0, 0xff, 60, 50, 10);
          strobe(0, 250, 154, 60, 50, 10);
          strobe(154, 0, 0xff, 60, 50, 10);
+
+         strobe(150, 0, 0, 60, 50, 10);
+         strobe(250, 255, 0, 60, 50, 10);
+         strobe(0, 150, 0, 60, 50, 10);
+         strobe(154, 154, 0xff, 60, 50, 10);
      
 
       }
@@ -568,19 +577,19 @@ void readTel()//Funçao que faz a leitura do Telegram.
       }
       else if (text.indexOf("clima") > -1)//Caso o texto recebido contenha "START"
       {
-          bot.sendMessage(id, "temperatura, humidade e pressao", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
-          
-          String msg = "Temperature eh ";
+          strobe(0, 0, 0xff, 20, 30, 10);
+
+          String msg = "Temperatura eh ";
           msg += msg.concat(temp.temperature);
-          msg += "C";
-          msg += " - ";
-          msg += "Humidity eh ";
+          msg += "Graus Celsius";
+          msg += "\n\n";
+          msg += "Humidade eh ";
           msg += msg.concat(humidity.relative_humidity);
-          msg += "%"; 
-          msg += " - ";
-          msg += "Pressao eh";
+          msg += "% de H.R."; 
+          msg += "\n\n";
+          msg += "Pressao eh ";
           msg += msg.concat(bmp.readPressure());
-          msg += "Pa"; 
+          msg += " Pa"; 
           bot.sendMessage(id, msg, "");     
      }
       else if(text.indexOf("start") > -1)//Caso o texto recebido contenha "START"
@@ -622,7 +631,6 @@ void readTel()//Funçao que faz a leitura do Telegram.
 
 
 void verifica(){
-
 //funcao acende led quando valor de ldr cair
 
 //Lê o valor do sensor ldr e armazena na variável valorldr
@@ -638,51 +646,49 @@ bot.sendMessage(id, "Quem apagou a luz? acende? /branco ou /verde");
   Serial.println("luz acesa");
 bot.sendMessage(id, "luz acesa? ");
 }
-//delay(600000);
 }
 
 
 
 void verifica2(){
 
-//funcao pressao atm
-//  valoratm = bmp.readPressure();
 
-valoratm = 1000;
+ sensors_event_t humidity, temp;
+ aht.getEvent(&humidity, &temp);
+  
+//funcao pressao atm
+  valoratm = bmp.readPressure();
+
+
 Serial.println(valoratm);
 
-if ((valoratm) < 800) {
+if ((valoratm) < 92298) {
 //Coloca led em alto para acioná-lo
 ledazul();
 Serial.println("Vem chuva por ai");
 bot.sendMessage(id,"Vem chuva por ai");
 }
 
-if ((valoratm) > 1100) { //Se o valor de valorldr for menor que 500:
+if ((valoratm) > 92300) { //Se o valor de valorldr for menor que 500:
     //Coloca led em alto para acioná-lo
 ledamarelo();
 Serial.println("Olha o sol , ceu claro!");
-bot.sendMessage(id,"Olha o sol , ceu claro!");
+bot.sendMessage(id,"Olha o sol ou lua , ceu claro!");
 }
 
 
 //funcao temperatura
-  
-//valortemp = bmp.readTemperature();
-valortemp = 30;
-
+valortemp = temp.temperature;
+ 
 Serial.println(valortemp);
 
-if ((valortemp) < 15) { //Se o valor de valorldr for menor que 500:
-//Coloca led em alto para acioná-lo
-ledazul();
+if ((valortemp) < 15) {    
+ledciano();
 Serial.println("Cade o casaco de neve?");
 bot.sendMessage(id,"Cade o casaco de neve?");
 }
 
-
-  if ((valortemp) > 38){ //Se o valor de valorldr for menor que 500:
-    //Coloca led em alto para acioná-lo
+  if ((valortemp) > 38){ 
 ledvermelho();
 Serial.println("Hora de dar um tibum na cachu!");
 bot.sendMessage(id,"Hora de dar um tibum na cachu!");
@@ -691,36 +697,47 @@ bot.sendMessage(id,"Hora de dar um tibum na cachu!");
 
   
 //funcao humidade
-sensors_event_t humidity, temp;
-  aht.getEvent(&humidity, &temp);// populate temp and humidity objects with fresh data
-  Serial.print("Temperature: "); Serial.print(temp.temperature); Serial.println(" degrees C");
-  Serial.print("Humidity: "); Serial.print(humidity.relative_humidity); Serial.println("% rH");
-  
-
-
-
-//valorhumi = (humidity.relative_humidity);//Lê o valor do sensor ldr e armazena na variável valorldr
-valorhumi = 50;//Lê o valor do sensor ldr e armazena na variável valorldr
+valorhumi = humidity.relative_humidity;//Lê o valor do sensor ldr e armazena na variável valorldr
 
 Serial.println(valorhumi);//Imprime na serial os dados de valorldr
 
-if ((valorhumi) < 30) { //Se o valor de valorldr for menor que 500:
-//Coloca led em alto para acioná-lo
-//ledazul();
+if ((valorhumi) < 40) { 
+
+ledamarelo();
 Serial.println("Tempo seco, beba agua");
 bot.sendMessage(id,"Tempo seco beba agua");
 }
 
-if ((valorhumi) > 95){ //Se o valor de valorldr for menor que 500:
-//Coloca led em alto para acioná-lo
-//ledazul();
+if ((valorhumi) > 88){ 
+
+ledvioleta();
 Serial.println("Tempo umido, ta chovendo?");
 bot.sendMessage(id,"Tempo umido ta chovendo?");
 }
-//delay(600000);
-
-
 }
+
+void verifica3(){
+
+  sensors_event_t humidity, temp;
+  aht.getEvent(&humidity, &temp);
+  
+          String msg = "Temperatura eh ";
+          msg += msg.concat(temp.temperature);
+          msg += "Graus Celsius";
+          msg += "\n\n";
+          msg += "Humidade eh ";
+          msg += msg.concat(humidity.relative_humidity);
+          msg += "% de H.R."; 
+          msg += "\n\n";
+          msg += "Pressao eh ";
+          msg += msg.concat(bmp.readPressure());
+          msg += " Pa"; 
+          bot.sendMessage(id, msg, ""); 
+
+          
+}
+
+
 
 // Function to extract numbers from compile time string
 static uint8_t conv2d(const char* p) {
