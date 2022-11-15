@@ -14,7 +14,7 @@
 #define WIFI_SSID "InternetSA"
 #define WIFI_PASSWORD "cadebabaca"
 // Telegram BOT Token (Get from Botfather)
-#define BOTtoken "5636503763:AAGVb0EGHIM3NbQICjdL0bRB8nbWdoAiKqc"
+#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
