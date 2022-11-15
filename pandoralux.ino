@@ -14,7 +14,7 @@
 #define WIFI_SSID "InternetSA"
 #define WIFI_PASSWORD "cadebabaca"
 // Telegram BOT Token (Get from Botfather)
-#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+#define BOTtoken "5636503763:AAGVb0EGHIM3NbQICjdL0bRB8nbWdoAiKqc"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -56,12 +56,12 @@ int valorhumi = 0;//Declara a variável valorldr como inteiro
 
 
 //definir mic
-#define threshold 2000//change this according to your clap sound
-int mic = 33;
+#define threshold 500  //change this according to your clap sound
+const int mic = 35;
 int sound_value;
 int clap_counter = 0;
 int color_counter = 0;
-boolean led_state = false; 
+boolean led_state = true; 
 
 
 
@@ -385,8 +385,7 @@ void setup()
 
 pinMode(ldr, INPUT); 
 pinMode(mic, INPUT); 
-
-
+analogReadResolution(9);
 
 pixels.begin();
 aht.begin();
@@ -423,17 +422,16 @@ bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
   Serial.print("Retrieving time: ");
   configTime(0, 0, "pool.ntp.org"); // get UTC time via NTP
   time_t now = time(nullptr);
-  while (now < 24 * 3600)
-  {
+//  while (now < 24 * 3600){
     Serial.print(".");
     delay(100);
     now = time(nullptr);
-  }
+//  }
   Serial.println(now);
            readTel();
            bot.sendMessage(id, "Pandora Conectada...", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
            Serial.println("Pandora Conectada...");
-           strobe(0xff, 0xff, 0xff, 10, 50, 1000);
+           strobe(0xff, 0xff, 0xff, 10, 50, 500);
 
 
 }
@@ -444,7 +442,6 @@ void loop()
   if (millis() - tempo8 > 100)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
          readSoundSensor();
-         Serial.println(analogRead(mic));
          tempo8 = millis();
   
    }
@@ -476,20 +473,14 @@ void loop()
        verifica3();
        tempo7 = millis();
      
-   }
-
-
-
-
-   
-}
+   }}
 
 void connect()//Funçao para Conectar ao wifi e verificar à conexao.
 {
    if (WiFi.status() != WL_CONNECTED)//Caso nao esteja conectado ao WiFi, Ira conectarse
    {
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-    delay(2000);
+    delay(500);
    }
 }
 
@@ -501,20 +492,17 @@ void readSoundSensor(){
 
   sound_value = analogRead(mic);
 
-  if (sound_value > threshold) {  
+  if (sound_value < threshold) {  
     // trigger threshold
-    // toggle LED 
-     clap_counter++; 
-     if(clap_counter > 4) clap_counter = 0;
-     
+    // toggle LED     
      if (led_state) {
       led_state = false;
       color_counter++;// LED was on, now off
-      if(color_counter > 6) color_counter = 0;
+      if(color_counter > 7) color_counter = 0;
       changeColor();
 Serial.println(color_counter);
-Serial.println(clap_counter);
-
+Serial.println("Clap on");
+delay(4000);
 
       
    }
@@ -522,10 +510,11 @@ Serial.println(clap_counter);
          led_state = true;
          setAll(0,0,0);
          pixels.show();
-      Serial.println(sound_value);
+      Serial.println("Clap off");
+      delay(4000);
     }  
-         
-         }}
+     
+    }}
  
 
 
@@ -810,33 +799,35 @@ void verifica3(){
 
 
 void changeColor(){
-  bot.sendMessage(id, "Alguem bateu palmas, acendendo a luz, mudando de cor", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+   
+   bot.sendMessage(id, "Alguem bateu palmas, acendendo a luz, mudando de cor", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
   Serial.println("Luz acionada com som");
-//aciona com 3 palmas
-if (clap_counter == 3)
-  {
-    //display rainbow
-  rainbow(10);
-    color_counter = 0;
-     bot.sendMessage(id, "3 palminhas", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
-
-  }
-
-
 //muda de cor
+if (color_counter == 0)
+  {
+    //display red
+      setAll(255,255,255);
+      pixels.setBrightness(255);
+    pixels.show();
+  }
   if (color_counter == 1)
   {
     //display red
       setAll(255,255,255);
+      pixels.setBrightness(255);
     pixels.show();
   }
   if (color_counter == 2)
-  { setAll(100,100,100);
+  { setAll(255,255,255);
+  pixels.setBrightness(125);
     pixels.show();
+         bot.sendMessage(id, "Dimmer", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+
     }
    if (color_counter == 3)
   { 
-       setAll(255,0,0);
+       setAll(255,255,255);
+       pixels.setBrightness(55);
     pixels.show();
     }
    if (color_counter == 4)
@@ -852,11 +843,13 @@ if (clap_counter == 3)
   if (color_counter == 6)
   { 
        setAll(0,0,255);
-    pixels.show();   
+    pixels.show(); 
+    }  
+ if (color_counter == 7)
+  { 
+   strobe(0, 0xff, 0xff, 10, 50, 500);
 }
-
-
-  }
+}
 
 // Function to extract numbers from compile time string
 static uint8_t conv2d(const char* p) {
