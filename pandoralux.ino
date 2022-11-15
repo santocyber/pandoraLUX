@@ -14,7 +14,7 @@
 #define WIFI_SSID "InternetSA"
 #define WIFI_PASSWORD "cadebabaca"
 // Telegram BOT Token (Get from Botfather)
-#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -41,11 +41,7 @@ Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 #define DELAYVAL 200 // Time (in milliseconds) to pause between pixels
 
 
-int buzzerPin = 26;
-int ledPin = 27;
-
 const int buttonPin = 0;
-const int button2Pin = 35;
 int valorbutton = 0;
 
 
@@ -59,6 +55,16 @@ int valortemp = 0;//Declara a variável valorldr como inteiro
 int valorhumi = 0;//Declara a variável valorldr como inteiro
 
 
+//definir mic
+#define threshold 2000//change this according to your clap sound
+int mic = 33;
+int sound_value;
+int clap_counter = 0;
+int color_counter = 0;
+boolean led_state = false; 
+
+
+
 
 unsigned long millisTarefa1 = millis();
 unsigned long tempo2 = millis();
@@ -67,6 +73,7 @@ unsigned long tempo4 = millis();
 unsigned long tempo5 = millis();
 unsigned long tempo6 = millis();
 unsigned long tempo7 = millis();
+unsigned long tempo8 = millis();
 
 
 
@@ -111,6 +118,21 @@ void ledazul(){
 tempo2 = millis();
 }
 
+
+
+void ledlaranja(){
+ if (millis() - tempo2 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+   pixels.clear(); // Set all pixel colors to 'off'
+  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
+    pixels.setPixelColor(i, pixels.Color(210, 100, 0));
+    pixels.show();   // Send the updated pixel colors to the hardware.
+    delay(DELAYVAL); // Pause before next pass through loop
+}}
+tempo2 = millis();
+}
+
+
 void ledamarelo(){
  if (millis() - tempo2 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
@@ -126,7 +148,7 @@ tempo2 = millis();
 void ledvermelho(){
 
 
-    if (millis() - tempo2 > 2500)//Faz a verificaçao das funçoes a cada 2 Segundos
+    if (millis() - tempo2 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
   pixels.clear(); // Set all pixel colors to 'off'
 
@@ -147,7 +169,7 @@ tempo2 = millis();
 void ledvioleta(){
 
 
-    if (millis() - tempo2 > 2500)//Faz a verificaçao das funçoes a cada 2 Segundos
+    if (millis() - tempo2 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
   pixels.clear(); // Set all pixel colors to 'off'
 
@@ -170,7 +192,7 @@ tempo2 = millis();
 void ledciano(){
 
 
-    if (millis() - tempo2 > 2500)//Faz a verificaçao das funçoes a cada 2 Segundos
+    if (millis() - tempo2 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
   pixels.clear(); // Set all pixel colors to 'off'
 
@@ -213,22 +235,13 @@ void branco(){
 void ledoff(){
 
 
-    if (millis() - tempo > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
-   {
-  pixels.clear(); // Set all pixel colors to 'off'
-
-  // The first NeoPixel in a strand is #0, second is 1, all the way up
-  // to the count of pixels minus one.
-  for(int i=0; i<NUMPIXELS; i++) { // For each pixel...
-
-    // pixels.Color() takes RGB values, from 0,0,0 up to 255,255,255
-    // Here we're using a moderately bright green color:
-    pixels.setPixelColor(i, pixels.Color(0, 0, 0));
-    pixels.setBrightness(255);
-    pixels.show();   // Send the updated pixel colors to the hardware.
-
- //   delay(DELAYVAL); // Pause before next pass through loop
-}}}
+    if (millis() - tempo2 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {    setAll(0,0,0);
+         pixels.show();
+         
+         }
+         tempo2 = millis();
+         }
 
 
 
@@ -371,6 +384,7 @@ void setup()
 {
 
 pinMode(ldr, INPUT); 
+pinMode(mic, INPUT); 
 
 
 
@@ -426,6 +440,15 @@ bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
 
 void loop()
 {
+
+  if (millis() - tempo8 > 100)//Faz a verificaçao das funçoes a cada 2 Segundos
+   {
+         readSoundSensor();
+         Serial.println(analogRead(mic));
+         tempo8 = millis();
+  
+   }
+   
    if (millis() - tempo > 2000)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
       connect();//Funçao para verificar se ainda há conexao
@@ -456,6 +479,8 @@ void loop()
    }
 
 
+
+
    
 }
 
@@ -467,6 +492,47 @@ void connect()//Funçao para Conectar ao wifi e verificar à conexao.
     delay(2000);
    }
 }
+
+
+
+// Sound sensor code
+void readSoundSensor(){
+
+
+  sound_value = analogRead(mic);
+
+  if (sound_value > threshold) {  
+    // trigger threshold
+    // toggle LED 
+     clap_counter++; 
+     if(clap_counter > 4) clap_counter = 0;
+     
+     if (led_state) {
+      led_state = false;
+      color_counter++;// LED was on, now off
+      if(color_counter > 6) color_counter = 0;
+      changeColor();
+Serial.println(color_counter);
+Serial.println(clap_counter);
+
+
+      
+   }
+    else {
+         led_state = true;
+         setAll(0,0,0);
+         pixels.show();
+      Serial.println(sound_value);
+    }  
+         
+         }}
+ 
+
+
+
+
+
+
 
 void readTel()//Funçao que faz a leitura do Telegram.
 {
@@ -517,6 +583,11 @@ void readTel()//Funçao que faz a leitura do Telegram.
          bot.sendMessage(id, "Violet", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
          ledvioleta();
       }
+            else if (text.indexOf("laranja") > -1)//Caso o texto recebido contenha "OFF"
+      {
+         bot.sendMessage(id, "Cor de mixirica", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+         ledlaranja();
+      }
             else if (text.indexOf("ciano") > -1)//Caso o texto recebido contenha "OFF"
       {
          bot.sendMessage(id, "verde azulado ciano a mistura de verde e azul", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
@@ -529,7 +600,7 @@ void readTel()//Funçao que faz a leitura do Telegram.
       }    
       else if (text.indexOf("runninglights") > -1)//Caso o texto recebido contenha "OFF"
       {
-         runninglights(0,0,255,500);
+         runninglights(0,0,255,100);
          bot.sendMessage(id, "corre gira", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }   
       else if (text.indexOf("arcoiris") > -1)//Caso o texto recebido contenha "OFF"
@@ -708,7 +779,7 @@ Serial.println("Tempo seco, beba agua");
 bot.sendMessage(id,"Tempo seco beba agua");
 }
 
-if ((valorhumi) > 88){ 
+if ((valorhumi) > 92){ 
 
 ledvioleta();
 Serial.println("Tempo umido, ta chovendo?");
@@ -738,6 +809,54 @@ void verifica3(){
 }
 
 
+void changeColor(){
+  bot.sendMessage(id, "Alguem bateu palmas, acendendo a luz, mudando de cor", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+  Serial.println("Luz acionada com som");
+//aciona com 3 palmas
+if (clap_counter == 3)
+  {
+    //display rainbow
+  rainbow(10);
+    color_counter = 0;
+     bot.sendMessage(id, "3 palminhas", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+
+  }
+
+
+//muda de cor
+  if (color_counter == 1)
+  {
+    //display red
+      setAll(255,255,255);
+    pixels.show();
+  }
+  if (color_counter == 2)
+  { setAll(100,100,100);
+    pixels.show();
+    }
+   if (color_counter == 3)
+  { 
+       setAll(255,0,0);
+    pixels.show();
+    }
+   if (color_counter == 4)
+  { 
+      setAll(255,255,0);
+    pixels.show();
+    }
+   if (color_counter == 5)
+  { 
+       setAll(0,255,255);
+    pixels.show();
+    }
+  if (color_counter == 6)
+  { 
+       setAll(0,0,255);
+    pixels.show();   
+}
+
+
+  }
 
 // Function to extract numbers from compile time string
 static uint8_t conv2d(const char* p) {
