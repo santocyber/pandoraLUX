@@ -14,7 +14,7 @@
 #define WIFI_SSID "InternetSA"
 #define WIFI_PASSWORD "cadebabaca"
 // Telegram BOT Token (Get from Botfather)
-#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -92,6 +92,92 @@ unsigned int colour = 0;
 
 
 //####################################################
+
+
+// Sound sensor code
+void readSoundSensor(){
+
+
+  sound_value = analogRead(mic);
+
+  if (sound_value < threshold) {  
+    // trigger threshold
+    // toggle LED     
+     if (led_state) {
+      led_state = false;
+      color_counter++;// LED was on, now off
+      if(color_counter > 7) color_counter = 0;
+      changeColor();
+Serial.println(color_counter);
+Serial.println("Clap on");
+delay(5000);
+
+      
+   }
+    else {
+         led_state = true;
+         setAll(0,0,0);
+         pixels.show();
+      Serial.println("Clap off");
+      delay(5000);
+    }  
+     
+    }}
+ 
+
+void changeColor(){
+   
+  bot.sendMessage(id, "Alguem bateu palmas, acendendo a luz, mudando de cor", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+  Serial.println("Luz acionada com som");
+//muda de cor
+if (color_counter == 0)
+  {
+    //display red
+      setAll(255,255,255);
+      pixels.setBrightness(255);
+    pixels.show();
+  }
+  if (color_counter == 1)
+  {
+    //display red
+      setAll(255,255,255);
+      pixels.setBrightness(255);
+    pixels.show();
+  }
+  if (color_counter == 2)
+  { setAll(255,255,255);
+  pixels.setBrightness(125);
+    pixels.show();
+         bot.sendMessage(id, "Dimmer", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+
+    }
+   if (color_counter == 3)
+  { 
+       setAll(255,255,255);
+       pixels.setBrightness(55);
+    pixels.show();
+    }
+   if (color_counter == 4)
+  { 
+      setAll(255,255,0);
+    pixels.show();
+    }
+   if (color_counter == 5)
+  { 
+       setAll(0,255,255);
+    pixels.show();
+    }
+  if (color_counter == 6)
+  { 
+       setAll(0,0,255);
+    pixels.show(); 
+    }  
+ if (color_counter == 7)
+  { 
+   strobe(0, 0xff, 0xff, 10, 50, 500);
+}
+}
+
 
 
 void ledgreen (){
@@ -468,7 +554,7 @@ void loop()
      
    }
    
-  if (millis() - tempo7 > 144000000)//Faz a verificaçao das funçoes a cada 2 Segundos
+  if (millis() - tempo7 > 36000000)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
        verifica3();
        tempo7 = millis();
@@ -483,43 +569,6 @@ void connect()//Funçao para Conectar ao wifi e verificar à conexao.
     delay(500);
    }
 }
-
-
-
-// Sound sensor code
-void readSoundSensor(){
-
-
-  sound_value = analogRead(mic);
-
-  if (sound_value < threshold) {  
-    // trigger threshold
-    // toggle LED     
-     if (led_state) {
-      led_state = false;
-      color_counter++;// LED was on, now off
-      if(color_counter > 7) color_counter = 0;
-      changeColor();
-Serial.println(color_counter);
-Serial.println("Clap on");
-delay(4000);
-
-      
-   }
-    else {
-         led_state = true;
-         setAll(0,0,0);
-         pixels.show();
-      Serial.println("Clap off");
-      delay(4000);
-    }  
-     
-    }}
- 
-
-
-
-
 
 
 
@@ -635,6 +684,11 @@ void readTel()//Funçao que faz a leitura do Telegram.
          branco();
          bot.sendMessage(id, "Luz ligada", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
       }
+         else if (text.indexOf("laranja") > -1)//Caso o texto recebido contenha "START"
+      {
+         ledlaranja();
+         bot.sendMessage(id, "a cor do suco...", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+      }
       else if (text.indexOf("clima") > -1)//Caso o texto recebido contenha "START"
       {
           strobe(0, 0, 0xff, 20, 30, 10);
@@ -662,6 +716,7 @@ void readTel()//Funçao que faz a leitura do Telegram.
       welcome += "/branco : Para ligar o LED branco\n";
       welcome += "/azul : Para ligar o LED \n";
       welcome += "/amarelo : Para ligar o LED \n";
+      welcome += "/laranja : Para ligar o LED \n";
       welcome += "/violeta : Para ligar o LED \n";
       welcome += "/ciano : Para ligar o LED \n";
       welcome += "/vermelho : Para ligar o LED \n";
@@ -798,58 +853,7 @@ void verifica3(){
 }
 
 
-void changeColor(){
-   
-   bot.sendMessage(id, "Alguem bateu palmas, acendendo a luz, mudando de cor", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
-  Serial.println("Luz acionada com som");
-//muda de cor
-if (color_counter == 0)
-  {
-    //display red
-      setAll(255,255,255);
-      pixels.setBrightness(255);
-    pixels.show();
-  }
-  if (color_counter == 1)
-  {
-    //display red
-      setAll(255,255,255);
-      pixels.setBrightness(255);
-    pixels.show();
-  }
-  if (color_counter == 2)
-  { setAll(255,255,255);
-  pixels.setBrightness(125);
-    pixels.show();
-         bot.sendMessage(id, "Dimmer", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
 
-    }
-   if (color_counter == 3)
-  { 
-       setAll(255,255,255);
-       pixels.setBrightness(55);
-    pixels.show();
-    }
-   if (color_counter == 4)
-  { 
-      setAll(255,255,0);
-    pixels.show();
-    }
-   if (color_counter == 5)
-  { 
-       setAll(0,255,255);
-    pixels.show();
-    }
-  if (color_counter == 6)
-  { 
-       setAll(0,0,255);
-    pixels.show(); 
-    }  
- if (color_counter == 7)
-  { 
-   strobe(0, 0xff, 0xff, 10, 50, 500);
-}
-}
 
 // Function to extract numbers from compile time string
 static uint8_t conv2d(const char* p) {
