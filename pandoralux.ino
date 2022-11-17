@@ -14,7 +14,7 @@
 #define WIFI_SSID "InternetSA"
 #define WIFI_PASSWORD "cadebabaca"
 // Telegram BOT Token (Get from Botfather)
-#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -59,6 +59,7 @@ int valorhumi = 0;//Declara a variável valorldr como inteiro
 #define threshold 500  //change this according to your clap sound
 const int mic = 35;
 int sound_value;
+int sound_value2;
 int clap_counter = 0;
 int color_counter = 0;
 boolean led_state = true; 
@@ -98,23 +99,23 @@ unsigned int colour = 0;
 void readSoundSensor(){
 sound_value = analogRead(mic);
 
-if (sound_value == LOW) {
-    strobe(0xff, 0, 0, 5, 30, 30);
-clap_counter = 1;
-}
 
-if (sound_value < 4000) {
+//if (sound_value == LOW) {
+//    strobe(0xff, 0, 0, 5, 30, 30);
+//clap_counter = 1;
+//}
+
+ if (sound_value < 4000) {
     strobe(0, 0xff, 0, 5, 30, 30);
 clap_counter = 1;
 }
 
 if (sound_value == 0) {
-     strobe(0, 0xff, 0xff, 5, 30, 30);
-clap_counter++;
-if(clap_counter > 2) {clap_counter = 1;}
+     strobe(0, 0, 0xff, 5, 30, 30);
+clap_counter = 1;
 }
 
-  if (clap_counter > 1) {  
+ if (clap_counter == 1) {  
    setAll(0,0,255);
         pixels.setBrightness(255);
         pixels.show();
@@ -126,10 +127,11 @@ if(clap_counter > 2) {clap_counter = 1;}
       if(color_counter > 7){ color_counter = 0;}
       changeColor();
       clap_counter = 0;
+  //    sound_value = 0;
 Serial.println("Clap on");
 Serial.println(color_counter);
 
-delay(500);
+delay(3000);
 
       
    }
@@ -137,13 +139,16 @@ delay(500);
          led_state = true;
          setAll(0,0,0);
          pixels.show();
-         clap_counter = 1;
+         clap_counter = 0;
+        // sound_value = 0;
 
       Serial.println("Clap off");
-      delay(500);
+      delay(3000);
     }}
-  //delay(300);
+  delay(500);
+  //      Serial.println("sound");
  // Serial.println(sound_value);
+
  // Serial.println(color_counter);
  // Serial.println(clap_counter);
 
@@ -537,7 +542,7 @@ bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
 void loop()
 {
 
-  if (millis() - tempo8 > 1000)//Faz a verificaçao das funçoes a cada 2 Segundos
+  if (millis() - tempo8 > 500)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
          readSoundSensor();
          tempo8 = millis();
