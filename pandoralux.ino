@@ -14,7 +14,7 @@
 #define WIFI_SSID "InternetSA"
 #define WIFI_PASSWORD "cadebabaca"
 // Telegram BOT Token (Get from Botfather)
-#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+#define BOTtoken "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 
 WiFiClientSecure client;
 UniversalTelegramBot bot(BOTtoken, client);
@@ -96,21 +96,40 @@ unsigned int colour = 0;
 
 // Sound sensor code
 void readSoundSensor(){
+sound_value = analogRead(mic);
 
+if (sound_value == LOW) {
+    strobe(0xff, 0, 0, 5, 30, 30);
+clap_counter = 1;
+}
 
-  sound_value = analogRead(mic);
+if (sound_value < 4000) {
+    strobe(0, 0xff, 0, 5, 30, 30);
+clap_counter = 1;
+}
 
-  if (sound_value < threshold) {  
+if (sound_value == 0) {
+     strobe(0, 0xff, 0xff, 5, 30, 30);
+clap_counter++;
+if(clap_counter > 2) {clap_counter = 1;}
+}
+
+  if (clap_counter > 1) {  
+   setAll(0,0,255);
+        pixels.setBrightness(255);
+        pixels.show();
     // trigger threshold
     // toggle LED     
      if (led_state) {
       led_state = false;
       color_counter++;// LED was on, now off
-      if(color_counter > 7) color_counter = 0;
+      if(color_counter > 7){ color_counter = 0;}
       changeColor();
-Serial.println(color_counter);
+      clap_counter = 0;
 Serial.println("Clap on");
-delay(5000);
+Serial.println(color_counter);
+
+delay(500);
 
       
    }
@@ -118,16 +137,22 @@ delay(5000);
          led_state = true;
          setAll(0,0,0);
          pixels.show();
+         clap_counter = 1;
+
       Serial.println("Clap off");
-      delay(5000);
-    }  
-     
+      delay(500);
     }}
+  //delay(300);
+ // Serial.println(sound_value);
+ // Serial.println(color_counter);
+ // Serial.println(clap_counter);
+
+    }
  
 
 void changeColor(){
    
-  bot.sendMessage(id, "Alguem bateu palmas, acendendo a luz, mudando de cor", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+  //bot.sendMessage(id, "Alguem bateu palmas, acendendo a luz, mudando intensidade, mudando de cor", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
   Serial.println("Luz acionada com som");
 //muda de cor
 if (color_counter == 0)
@@ -148,7 +173,7 @@ if (color_counter == 0)
   { setAll(255,255,255);
   pixels.setBrightness(125);
     pixels.show();
-         bot.sendMessage(id, "Dimmer", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
+    //     bot.sendMessage(id, "Dimmer", "");//Envia uma Mensagem para a pessoa que enviou o Comando.
 
     }
    if (color_counter == 3)
@@ -177,6 +202,9 @@ if (color_counter == 0)
    strobe(0, 0xff, 0xff, 10, 50, 500);
 }
 }
+
+
+
 
 
 
@@ -360,21 +388,9 @@ delay(FadeSpeed);
 
 
 void rainbow(int wait) {
-  // Hue of first pixel runs 3 complete loops through the color wheel.
-  // Color wheel has a range of 65536 but it's OK if we roll over, so
-  // just count from 0 to 3*65536. Adding 256 to firstPixelHue each time
-  // means we'll make 3*65536/256 = 768 passes through this outer loop:
   for(long firstPixelHue = 0; firstPixelHue < 3*65536; firstPixelHue += 256) {
-    for(int i=0; i<pixels.numPixels(); i++) { // For each pixel in pixels...
-      // Offset pixel hue by an amount to make one full revolution of the
-      // color wheel (range of 65536) along the length of the strip
-      // (strip.numPixels() steps):
+    for(int i=0; i<pixels.numPixels(); i++) { 
       int pixelHue = firstPixelHue + (i * 65536L / pixels.numPixels());
-      // pixels.ColorHSV() can take 1 or 3 arguments: a hue (0 to 65535) or
-      // optionally add saturation and value (brightness) (each 0 to 255).
-      // Here we're using just the single-argument hue variant. The result
-      // is passed through pixels.gamma32() to provide 'truer' colors
-      // before assigning to each pixel:
       pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(pixelHue)));
     }
     pixels.show(); // Update strip with new contents
@@ -470,8 +486,8 @@ void setup()
 {
 
 pinMode(ldr, INPUT); 
-pinMode(mic, INPUT); 
-analogReadResolution(9);
+//pinMode(mic, INPUT); 
+//analogReadResolution(9);
 
 pixels.begin();
 aht.begin();
@@ -490,17 +506,13 @@ bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
    connect();//Funçao para Conectar ao WiFi
 
    Serial.begin(115200);
-  Serial.println();
    // attempt to connect to Wifi network:
   Serial.print("Connecting to Wifi SSID ");
   Serial.print(WIFI_SSID);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   client.setCACert(TELEGRAM_CERTIFICATE_ROOT); // Add root certificate for api.telegram.org
-  while (WiFi.status() != WL_CONNECTED)
-  {
-    Serial.print(".");
-    delay(500);
-  }
+  //while (WiFi.status() != WL_CONNECTED){Serial.print(".");delay(500);}
+  delay(500);
   Serial.print("\nWiFi connected. IP address: ");
   Serial.println(WiFi.localIP());
 
@@ -510,7 +522,7 @@ bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
   time_t now = time(nullptr);
 //  while (now < 24 * 3600){
     Serial.print(".");
-    delay(100);
+    delay(500);
     now = time(nullptr);
 //  }
   Serial.println(now);
@@ -525,7 +537,7 @@ bmp.setSampling(Adafruit_BMP280::MODE_NORMAL,     /* Operating Mode. */
 void loop()
 {
 
-  if (millis() - tempo8 > 100)//Faz a verificaçao das funçoes a cada 2 Segundos
+  if (millis() - tempo8 > 1000)//Faz a verificaçao das funçoes a cada 2 Segundos
    {
          readSoundSensor();
          tempo8 = millis();
@@ -560,6 +572,13 @@ void loop()
        tempo7 = millis();
      
    }}
+
+
+
+
+
+
+
 
 void connect()//Funçao para Conectar ao wifi e verificar à conexao.
 {
@@ -777,7 +796,7 @@ void verifica2(){
 
 Serial.println(valoratm);
 
-if ((valoratm) < 92298) {
+if ((valoratm) < 92290) {
 //Coloca led em alto para acioná-lo
 ledazul();
 Serial.println("Vem chuva por ai");
@@ -840,7 +859,7 @@ void verifica3(){
           msg += msg.concat(temp.temperature);
           msg += "Graus Celsius";
           msg += "\n\n";
-          msg += "Humidade eh ";
+          msg += "Umidade eh ";
           msg += msg.concat(humidity.relative_humidity);
           msg += "% de H.R."; 
           msg += "\n\n";
